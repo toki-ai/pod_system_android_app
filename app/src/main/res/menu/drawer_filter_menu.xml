@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_filter_title"
+            android:title="Room Type Filters"
+            android:enabled="false" />
+    </group>
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_filter_single"
+            android:title="Single Pod"
+            android:checkable="true"
+            android:checked="true" />
+        
+        <item
+            android:id="@+id/nav_filter_double"
+            android:title="Double Pod" 
+            android:checkable="true"
+            android:checked="true" />
+        
+        <item
+            android:id="@+id/nav_filter_meeting"
+            android:title="Meeting Room"
+            android:checkable="true"
+            android:checked="true" />
+        
+        <item
+            android:id="@+id/nav_filter_conference"
+            android:title="Conference Room"
+            android:checkable="true"
+            android:checked="true" />
+    </group>
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_price_title"
+            android:title="Price Range"
+            android:enabled="false" />
+    </group>
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_price_all"
+            android:title="All Prices"
+            android:checkable="true"
+            android:checked="true" />
+        
+        <item
+            android:id="@+id/nav_price_low"
+            android:title="Under 50.000 VND"
+            android:checkable="true" />
+        
+        <item
+            android:id="@+id/nav_price_medium"
+            android:title="50.000 - 100.000 VND"
+            android:checkable="true" />
+        
+        <item
+            android:id="@+id/nav_price_high"
+            android:title="Above 100.000 VND"
+            android:checkable="true" />
+    </group>
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_reset_filters"
+            android:title="Reset All Filters" />
+    </group>
+
+</menu>

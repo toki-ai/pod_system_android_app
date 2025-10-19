@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">POD Booking</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    
+    <!-- Login Screen -->
+    <string name="login_title">POD Booking System</string>
+    <string name="login_subtitle">Welcome back! Please sign in</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="signing_in">Signing in...</string>
+    <string name="login_success">Login successful!</string>
+    <string name="login_failed">Login failed</string>
+    
+    <!-- Validation Messages -->
+    <string name="email_required">Email is required</string>
+    <string name="email_invalid">Please enter a valid email</string>
+    <string name="password_required">Password is required</string>
+    <string name="password_min_length">Password must be at least 6 characters</string>
+    
+    <!-- Test Buttons -->
+    <string name="test_valid_credentials">Test with Valid Credentials</string>
+    <string name="test_invalid_credentials">Test with Invalid Credentials</string>
+    <string name="check_auth_status">Check Auth Status</string>
+    <string name="development_tools">Development Tools</string>
+    
+    <!-- Network Messages -->
+    <string name="no_internet">No internet connection available</string>
+    <string name="network_error">Network error occurred</string>
+    <string name="server_error">Server error. Please try again later</string>
+</resources>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Room Image -->
+        <ImageView
+            android:id="@+id/iv_room_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_corner_background"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder_room" />
+
+        <!-- Room Details -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Room Name -->
+            <TextView
+                android:id="@+id/tv_room_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Single Pod"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Room Description -->
+            <TextView
+                android:id="@+id/tv_room_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tư nhân, riêng tư"
+                android:textSize="14sp"
+                android:textColor="@color/gray"
+                android:layout_marginTop="4dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Room Info -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <!-- Capacity -->
+                <TextView
+                    android:id="@+id/tv_capacity"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="👤 1 người"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray" />
+
+                <!-- Available Rooms -->
+                <TextView
+                    android:id="@+id/tv_available"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🟢 5 phòng"
+                    android:textSize="12sp"
+                    android:textColor="@color/success" />
+
+            </LinearLayout>
+
+            <!-- Price -->
+            <TextView
+                android:id="@+id/tv_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="20.000 VND"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <!-- Book Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_book"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ĐẶT PHÒNG"
+            android:textSize="12sp"
+            android:layout_gravity="center_vertical"
+            style="@style/Widget.MaterialComponents.Button" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
