@@ -3,6 +3,13 @@
 
     <group android:checkableBehavior="none">
         <item
+            android:id="@+id/nav_cart"
+            android:title="Shopping Cart"
+            android:icon="@drawable/ic_cart" />
+    </group>
+
+    <group android:checkableBehavior="none">
+        <item
             android:id="@+id/nav_filter_title"
             android:title="Room Type Filters"
             android:enabled="false" />

@@ -1,6 +1,9 @@
 package com.example.assignmentpod.ui;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,13 +13,19 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.assignmentpod.MyApplication;
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.local.database.AppDatabase;
+import com.example.assignmentpod.data.local.database.RoomDAO;
 import com.example.assignmentpod.data.remote.api.RetrofitClient;
 import com.example.assignmentpod.data.repository.AuthRepository;
+import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.utils.LoadingManager;
 import com.example.assignmentpod.utils.MultiStackNavigationManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -29,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
     private AuthRepository authRepository;
+    private CartRepository cartRepository;
     private LoadingManager loadingManager;
     
     // Navigation components
@@ -45,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
 
             authRepository = new AuthRepository(this);
+            cartRepository = CartRepository.getInstance(this);
             loadingManager = new LoadingManager(this);
             navManager = new MultiStackNavigationManager();
             
@@ -60,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
             initNavigationComponents();
             setupBottomNavigation();
             setupBackPressedHandler();
+            checkCartAndShowNotification();
             
             // Set default tab if this is a fresh start
             if (savedInstanceState == null) {
@@ -269,5 +281,26 @@ public class MainActivity extends AppCompatActivity {
         if (navManager != null) {
             navManager.clearStates();
         }
+    }
+    
+    private void checkCartAndShowNotification() {
+        cartRepository.getCartItemCount().observe(this, count -> {
+            if (count != null && count > 0) {
+                showCartNotification(count);
+            }
+        });
+    }
+    
+    private void showCartNotification(int itemCount) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MyApplication.CART_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_cart)
+                .setContentTitle("Shopping Cart")
+                .setContentText("You have " + itemCount + " item(s) in your cart")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+        
+        notificationManager.notify(1, builder.build());
     }
 }
