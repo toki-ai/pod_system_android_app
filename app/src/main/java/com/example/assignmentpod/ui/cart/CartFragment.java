@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private CartAdapter cartAdapter;
     private RecyclerView recyclerView;
     private TextView emptyCartText;
+    private ImageButton btnBack;
     
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,12 +46,14 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         
         initViews(view);
         setupRecyclerView();
+        setupClickListeners();
         observeData();
     }
     
     private void initViews(View view) {
         recyclerView = view.findViewById(R.id.recycler_view_cart);
         emptyCartText = view.findViewById(R.id.tv_empty_cart);
+        btnBack = view.findViewById(R.id.btn_back);
     }
     
     private void setupRecyclerView() {
@@ -58,6 +62,12 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(cartAdapter);
+    }
+    
+    private void setupClickListeners() {
+        btnBack.setOnClickListener(v -> {
+            Navigation.findNavController(requireView()).popBackStack();
+        });
     }
     
     private void observeData() {

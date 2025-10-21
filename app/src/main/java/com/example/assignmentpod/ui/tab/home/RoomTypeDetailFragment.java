@@ -80,7 +80,11 @@ public class RoomTypeDetailFragment extends Fragment {
         RoomType roomType = new RoomType();
         roomType.setId(roomTypeId);
         roomType.setName(tvRoomTypeName.getText().toString());
-        roomType.setPrice(Double.parseDouble(tvRoomTypePrice.getText().toString().replaceAll("[^0-9]", "")));
+        
+        // Parse price as int since RoomType.setPrice() expects int
+        String priceText = tvRoomTypePrice.getText().toString().replaceAll("[^0-9]", "");
+        int price = priceText.isEmpty() ? 0 : Integer.parseInt(priceText);
+        roomType.setPrice(price);
         
         Room room = new Room();
         room.setId(roomId > 0 ? roomId : roomTypeId);
