@@ -3,6 +3,8 @@ package com.example.assignmentpod.ui.cart;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,6 +20,7 @@ import java.util.List;
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
     private List<CartItem> cartItems = new ArrayList<>();
     private OnCartItemClickListener listener;
+    private int lastPosition = -1;
     
     public interface OnCartItemClickListener {
         void onItemClick(CartItem cartItem);
@@ -45,6 +48,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         CartItem cartItem = cartItems.get(position);
         holder.bind(cartItem);
+        
+        // Add animation for new items
+        if (position > lastPosition) {
+            Animation animation = AnimationUtils.loadAnimation(holder.itemView.getContext(), 
+                android.R.anim.slide_in_left);
+            holder.itemView.startAnimation(animation);
+            lastPosition = position;
+        }
     }
     
     @Override
@@ -96,6 +107,17 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             
             // Set placeholder image for now
             roomImage.setImageResource(R.drawable.placeholder_room);
+            
+            // Add click animation
+            itemView.setOnClickListener(v -> {
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
+                    .withEndAction(() -> {
+                        v.animate().scaleX(1f).scaleY(1f).setDuration(100);
+                        if (listener != null) {
+                            listener.onItemClick(cartItem);
+                        }
+                    });
+            });
         }
     }
 }

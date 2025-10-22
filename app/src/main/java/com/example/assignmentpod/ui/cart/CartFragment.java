@@ -4,7 +4,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.model.cart.CartItem;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
@@ -25,8 +28,10 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private CartViewModel cartViewModel;
     private CartAdapter cartAdapter;
     private RecyclerView recyclerView;
-    private TextView emptyCartText;
-    private ImageButton btnBack;
+    private View emptyCartLayout;
+    private TextView tvTotalItems, tvTotalPrice;
+    private MaterialButton btnCheckout;
+    private ImageView btnBack;
     
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,11 +53,18 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         setupRecyclerView();
         setupClickListeners();
         observeData();
+        
+        // Add entrance animation
+        Animation slideIn = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_in_left);
+        view.startAnimation(slideIn);
     }
     
     private void initViews(View view) {
         recyclerView = view.findViewById(R.id.recycler_view_cart);
-        emptyCartText = view.findViewById(R.id.tv_empty_cart);
+        emptyCartLayout = view.findViewById(R.id.empty_cart_layout);
+        tvTotalItems = view.findViewById(R.id.tv_total_items);
+        tvTotalPrice = view.findViewById(R.id.tv_total_price);
+        btnCheckout = view.findViewById(R.id.btn_checkout);
         btnBack = view.findViewById(R.id.btn_back);
     }
     
@@ -62,11 +74,38 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(cartAdapter);
+        
+        // Add item decoration for better spacing
+        recyclerView.addItemDecoration(new androidx.recyclerview.widget.DividerItemDecoration(
+            getContext(), LinearLayoutManager.VERTICAL));
     }
     
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> {
-            Navigation.findNavController(requireView()).popBackStack();
+            // Add exit animation
+            Animation slideOut = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_out_right);
+            v.startAnimation(slideOut);
+            slideOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {}
+                
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    Navigation.findNavController(v).popBackStack();
+                }
+                
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+        });
+        
+        btnCheckout.setOnClickListener(v -> {
+            // Add button press animation
+            v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
+                .withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100);
+                    Toast.makeText(getContext(), "Checkout feature coming soon!", Toast.LENGTH_SHORT).show();
+                });
         });
     }
     
@@ -79,11 +118,27 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         cartAdapter.setCartItems(cartItems);
         
         if (cartItems == null || cartItems.isEmpty()) {
-            emptyCartText.setVisibility(View.VISIBLE);
+            emptyCartLayout.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
+            tvTotalItems.setText("Total: 0 items");
+            tvTotalPrice.setText("0 VND");
+            btnCheckout.setEnabled(false);
+            btnCheckout.setAlpha(0.5f);
         } else {
-            emptyCartText.setVisibility(View.GONE);
+            emptyCartLayout.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
+            
+            // Calculate totals
+            int totalItems = cartItems.size();
+            double totalPrice = 0.0;
+            for (CartItem item : cartItems) {
+                totalPrice += item.getRoomPrice();
+            }
+            
+            tvTotalItems.setText("Total: " + totalItems + " item" + (totalItems > 1 ? "s" : ""));
+            tvTotalPrice.setText(String.format("%,.0f VND", totalPrice));
+            btnCheckout.setEnabled(true);
+            btnCheckout.setAlpha(1.0f);
         }
     }
     
