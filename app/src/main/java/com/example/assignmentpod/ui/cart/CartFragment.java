@@ -104,7 +104,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
             v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
                 .withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100);
-                    Toast.makeText(getContext(), "Checkout feature coming soon!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Tính năng thanh toán sẽ có sớm!", Toast.LENGTH_SHORT).show();
                 });
         });
     }
@@ -162,6 +162,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     @Override
     public void onDeleteClick(CartItem cartItem) {
         cartViewModel.removeFromCart(cartItem);
-        Toast.makeText(getContext(), "Item removed from cart", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 }

@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             
         } catch (Exception e) {
             Log.e(TAG, "Error in onCreate", e);
-            Toast.makeText(this, "Error initializing app", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Lỗi khởi tạo ứng dụng", Toast.LENGTH_LONG).show();
             finish();
         }
     }
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 
             } catch (Exception e) {
                 Log.e(TAG, "Error switching tabs", e);
-                Toast.makeText(this, "Error loading tab", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Lỗi tải tab", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -211,14 +211,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performLogout() {
-        loadingManager.showLoading("Logging out...");
+        loadingManager.showLoading("Đang đăng xuất...");
         
         authRepository.logout(new AuthRepository.LogoutCallback() {
             @Override
             public void onSuccess() {
                 runOnUiThread(() -> {
                     loadingManager.hideLoading();
-                    Toast.makeText(MainActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
                     navigateToLogin();
                 });
             }
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     loadingManager.hideLoading();
-                    Toast.makeText(MainActivity.this, "Logout error: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Lỗi đăng xuất: " + error, Toast.LENGTH_SHORT).show();
                     navigateToLogin();
                 });
             }
@@ -296,8 +296,8 @@ public class MainActivity extends AppCompatActivity {
         
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MyApplication.CART_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_cart)
-                .setContentTitle("Cart")
-                .setContentText("You have " + itemCount + " item(s) in your cart")
+                .setContentTitle("Giỏ hàng")
+                .setContentText("Bạn có " + itemCount + " sản phẩm trong giỏ hàng")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
         

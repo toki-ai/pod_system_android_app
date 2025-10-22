@@ -1,5 +1,6 @@
 package com.example.assignmentpod.data.local.database;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -15,10 +16,10 @@ public interface RoomDAO {
     
     // Cart operations
     @Query("SELECT * FROM cart_items ORDER BY addedAt DESC")
-    List<CartItem> getAllCartItems();
+    LiveData<List<CartItem>> getAllCartItems();
     
     @Query("SELECT COUNT(*) FROM cart_items")
-    int getCartItemCount();
+    LiveData<Integer> getCartItemCount();
     
     @Query("SELECT * FROM cart_items WHERE roomId = :roomId")
     CartItem getCartItemByRoomId(int roomId);

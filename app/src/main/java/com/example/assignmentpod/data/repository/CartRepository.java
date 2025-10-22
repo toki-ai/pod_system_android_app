@@ -37,21 +37,12 @@ public class CartRepository {
     }
     
     public LiveData<List<CartItem>> getAllCartItems() {
-        MutableLiveData<List<CartItem>> liveData = new MutableLiveData<>();
-        executor.execute(() -> {
-            List<CartItem> items = roomDAO.getAllCartItems();
-            mainHandler.post(() -> liveData.setValue(items));
-        });
-        return liveData;
+        // Room will auto-update this LiveData whenever the table changes
+        return roomDAO.getAllCartItems();
     }
     
     public LiveData<Integer> getCartItemCount() {
-        MutableLiveData<Integer> liveData = new MutableLiveData<>();
-        executor.execute(() -> {
-            int count = roomDAO.getCartItemCount();
-            mainHandler.post(() -> liveData.setValue(count));
-        });
-        return liveData;
+        return roomDAO.getCartItemCount();
     }
     
     public void addToCart(Room room) {

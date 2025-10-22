@@ -196,7 +196,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             public void onSuccess() {
                 if (getActivity() != null && isAdded()) {
                     getActivity().runOnUiThread(() -> {
-                        Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
                         navigateToLogin();
                     });
                 }
@@ -206,7 +206,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             public void onError(String error) {
                 if (getActivity() != null && isAdded()) {
                     getActivity().runOnUiThread(() -> {
-                        Toast.makeText(getContext(), "Logout failed: " + error, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Đăng xuất thất bại: " + error, Toast.LENGTH_SHORT).show();
                     });
                 }
             }
@@ -239,13 +239,13 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             navController.navigate(R.id.action_homeFragment_to_roomTypeDetailFragment, args);
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to room type detail", e);
-            Toast.makeText(getContext(), "Navigation error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Lỗi điều hướng", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onBookClick(RoomType roomType) {
-        Toast.makeText(getContext(), "Booking " + roomType.getName(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Đang đặt: " + roomType.getName(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -272,7 +272,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             return true;
         }
 
-        Toast.makeText(getContext(), "Filter demo - " + item.getTitle(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Bộ lọc demo - " + item.getTitle(), Toast.LENGTH_SHORT).show();
         
         return true;
     }

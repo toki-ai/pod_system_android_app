@@ -94,6 +94,6 @@ public class RoomTypeDetailFragment extends Fragment {
         room.setRoomType(roomType);
         
         cartRepository.addToCart(room);
-        Toast.makeText(getContext(), "Added to cart!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Đã thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
     }
 }
