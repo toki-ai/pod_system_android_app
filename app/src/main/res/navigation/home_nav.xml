@@ -47,7 +47,7 @@
     <fragment
         android:id="@+id/cartFragment"
         android:name="com.example.assignmentpod.ui.cart.CartFragment"
-        android:label="Shopping Cart"
+        android:label="Cart"
         tools:layout="@layout/fragment_cart" >
         <action
             android:id="@+id/action_cartFragment_to_roomTypeDetailFragment"

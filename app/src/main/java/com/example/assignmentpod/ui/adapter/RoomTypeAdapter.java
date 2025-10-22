@@ -26,6 +26,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
     public interface OnRoomTypeClickListener {
         void onRoomTypeClick(RoomType roomType);
         void onBookClick(RoomType roomType);
+            void onAddToCartClick(RoomType roomType);
     }
     
     public void setOnRoomTypeClickListener(OnRoomTypeClickListener listener) {
@@ -76,6 +77,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         private TextView tvAvailable;
         private TextView tvPrice;
         private MaterialButton btnBook;
+            private MaterialButton btnAddToCart;
 
         public RoomTypeViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -86,6 +88,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             tvAvailable = itemView.findViewById(R.id.tv_available);
             tvPrice = itemView.findViewById(R.id.tv_price);
             btnBook = itemView.findViewById(R.id.btn_book);
+                btnAddToCart = itemView.findViewById(R.id.btn_add_to_cart);
         }
 
         public void bind(RoomType roomType) {
@@ -128,6 +131,15 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                     listener.onBookClick(roomType);
                 }
             });
+
+                if (btnAddToCart != null) {
+                    btnAddToCart.setEnabled(available > 0);
+                    btnAddToCart.setOnClickListener(v -> {
+                        if (listener != null && available > 0) {
+                            listener.onAddToCartClick(roomType);
+                        }
+                    });
+                }
         }
         
         private String generateDescription(String roomTypeName) {

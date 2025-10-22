@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MyApplication.CART_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_cart)
-                .setContentTitle("Shopping Cart")
+                .setContentTitle("Cart")
                 .setContentText("You have " + itemCount + " item(s) in your cart")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);

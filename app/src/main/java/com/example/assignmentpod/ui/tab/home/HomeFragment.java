@@ -249,6 +249,20 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
 
     @Override
+    public void onAddToCartClick(RoomType roomType) {
+        // Build a minimal Room object to satisfy repository API
+        com.example.assignmentpod.model.room.Room room = new com.example.assignmentpod.model.room.Room();
+        room.setId(roomType.getId());
+        room.setName(roomType.getName());
+        room.setDescription("Room for booking");
+        room.setImage("");
+        room.setRoomType(roomType);
+
+        cartRepository.addToCart(room);
+        Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         drawerLayout.closeDrawer(GravityCompat.START);
 
