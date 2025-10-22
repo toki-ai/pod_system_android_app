@@ -20,8 +20,8 @@
             android:layout_height="wrap_content"
             android:text="FlexiPod"
             android:textColor="#025092"
-            android:textStyle="bold"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <!-- Main image -->
         <ImageView
@@ -37,70 +37,87 @@
             android:id="@+id/thumbnailContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="80dp"
-                android:src="@drawable/ic_placeholder"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
                 android:scaleType="centerCrop"
-                android:layout_margin="4dp" />
+                android:src="@drawable/ic_placeholder" />
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="80dp"
-                android:src="@drawable/ic_placeholder"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
                 android:scaleType="centerCrop"
-                android:layout_margin="4dp" />
+                android:src="@drawable/ic_placeholder" />
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="80dp"
-                android:src="@drawable/ic_placeholder"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
                 android:scaleType="centerCrop"
-                android:layout_margin="4dp" />
+                android:src="@drawable/ic_placeholder" />
         </LinearLayout>
 
-        <!-- Room name + price -->
-        <TextView
-            android:id="@+id/tvRoomName"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/basicInformationAndAddToCart"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Phòng POD đôi"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:weightSum="5">
 
-        <TextView
-            android:id="@+id/tvPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="20.000 VND/tiếng"
-            android:textColor="#23619C"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="8dp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:orientation="vertical">
+                <!-- Room name + price -->
+                <TextView
+                    android:id="@+id/tvRoomName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Phòng POD đôi"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-        <!-- Add to cart button -->
-        <Button
-            android:id="@+id/btnAddToCart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add to cart"
-            android:backgroundTint="#5681D9"
-            android:textColor="@android:color/white" />
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="20.000 VND/tiếng"
+                    android:textColor="#23619C"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Add to cart button -->
+            <Button
+                android:id="@+id/btnAddToCart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="#5681D9"
+                android:text="Add to cart"
+                android:textColor="@android:color/white"
+                app:cornerRadius="4dp" />
+        </LinearLayout>
 
         <!-- Booking Form -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
 
             <!-- Date -->
             <TextView
@@ -112,10 +129,10 @@
                 android:id="@+id/etDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="23/09/2020"
+                android:drawableEnd="@drawable/ic_calendar"
                 android:focusable="false"
-                android:inputType="none"
-                android:drawableEnd="@drawable/ic_calendar" />
+                android:hint="23/09/2020"
+                android:inputType="none" />
 
             <!-- Slot -->
             <TextView
@@ -158,8 +175,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvDiscount"
@@ -173,12 +190,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Tổng giá: 1.280.000 VND"
-                android:textStyle="bold"
-                android:textAlignment="textEnd" />
+                android:textAlignment="textEnd"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Book button -->
         <Button
             android:id="@+id/btnBook"
             android:layout_width="match_parent"
-            androi
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/teal_700"
+            android:padding="12dp"
+            android:text="ĐẶT PHÒNG"
+            android:textAllCaps="true"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>
