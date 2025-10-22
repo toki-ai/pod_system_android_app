@@ -30,7 +30,7 @@
             android:layout_height="200dp"
             android:layout_marginTop="8dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_placeholder" />
+            android:src="@drawable/ic_pod_placeholder" />
 
         <!-- Image thumbnails -->
         <LinearLayout
@@ -39,16 +39,17 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:weightSum="3"
             android:gravity="center"
             android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="0dp"
                 android:layout_height="80dp"
-                android:layout_margin="4dp"
+                android:layout_marginRight="4dp"
                 android:layout_weight="1"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_placeholder" />
+                android:src="@drawable/ic_pod_placeholder" />
 
             <ImageView
                 android:layout_width="0dp"
@@ -56,15 +57,15 @@
                 android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_placeholder" />
+                android:src="@drawable/ic_pod_placeholder" />
 
             <ImageView
                 android:layout_width="0dp"
                 android:layout_height="80dp"
-                android:layout_margin="4dp"
+                android:layout_marginLeft="4dp"
                 android:layout_weight="1"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_placeholder" />
+                android:src="@drawable/ic_pod_placeholder" />
         </LinearLayout>
 
         <!-- Basic info and add to cart button -->
@@ -212,12 +213,31 @@
             android:layout_marginTop="16dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvDiscount"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Giảm giá: -42.000 VND"
-                android:textAlignment="textEnd" />
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <TextView
+                    android:id="@+id/tvDiscount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Giảm giá:"
+                    android:textAlignment="textStart" />
+
+                <TextView
+                    android:id="@+id/tvDiscount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-42.000 VND"
+                    android:textAlignment="textEnd"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/tvTotalPrice"
