@@ -67,6 +67,7 @@
                 android:src="@drawable/ic_placeholder" />
         </LinearLayout>
 
+        <!-- Basic info and add to cart button -->
         <LinearLayout
             android:id="@+id/basicInformationAndAddToCart"
             android:layout_width="match_parent"
@@ -75,6 +76,7 @@
             android:orientation="horizontal"
             android:weightSum="5">
 
+            <!-- Name and price-->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,40 +119,71 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:weightSum="3">
 
-            <!-- Date -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ngày đặt" />
-
-            <EditText
-                android:id="@+id/etDate"
+            <!-- Ngày đặt và slot -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableEnd="@drawable/ic_calendar"
-                android:focusable="false"
-                android:hint="23/09/2020"
-                android:inputType="none" />
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-            <!-- Slot -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Slot" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="2dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:weightSum="2">
+                    <!-- Date -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ngày đặt" />
 
-            <Spinner
-                android:id="@+id/spSlot"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                    <EditText
+                        android:id="@+id/etDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawableEnd="@drawable/ic_calendar"
+                        android:focusable="false"
+                        android:hint="23/09/2020"
+                        android:inputType="none" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="2dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:weightSum="2">
+                    <!-- Slot -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Slot" />
+
+                    <Spinner
+                        android:id="@+id/spSlot"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
+
+            </LinearLayout>
 
             <!-- Room selection -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_weight="1"
                 android:text="Chọn phòng" />
 
             <Spinner
@@ -163,6 +196,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_weight="1"
                 android:text="Chọn gói" />
 
             <Spinner
@@ -199,8 +233,8 @@
             android:id="@+id/btnBook"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:backgroundTint="@color/teal_700"
+            android:layout_marginTop="40dp"
+            android:backgroundTint="#025092"
             android:padding="12dp"
             android:text="ĐẶT PHÒNG"
             android:textAllCaps="true"
