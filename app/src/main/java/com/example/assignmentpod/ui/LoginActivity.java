@@ -68,25 +68,25 @@ public class LoginActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         
         if (TextUtils.isEmpty(email)) {
-            etEmail.setError("Email is required");
+            etEmail.setError("Vui lòng nhập email");
             etEmail.requestFocus();
             return;
         }
         
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Please enter a valid email");
+            etEmail.setError("Email không hợp lệ");
             etEmail.requestFocus();
             return;
         }
         
         if (TextUtils.isEmpty(password)) {
-            etPassword.setError("Password is required");
+            etPassword.setError("Vui lòng nhập mật khẩu");
             etPassword.requestFocus();
             return;
         }
         
         if (password.length() < 6) {
-            etPassword.setError("Password must be at least 6 characters");
+            etPassword.setError("Mật khẩu phải có ít nhất 6 ký tự");
             etPassword.requestFocus();
             return;
         }
@@ -105,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     showLoading(false);
                     
-                    String message = "Login successful!";
+                    String message = "Đăng nhập thành công!";
                     if (authResponse.getAccount() != null) {
                         message += " Welcome " + authResponse.getAccount().getName();
                     }
@@ -124,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     showLoading(false);
                     
-                    Toast.makeText(LoginActivity.this, "Login failed: " + error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + error, Toast.LENGTH_LONG).show();
                     
                     Log.e(TAG, "Login failed for: " + email + ", Error: " + error);
 
@@ -137,7 +137,7 @@ public class LoginActivity extends AppCompatActivity {
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         btnLogin.setEnabled(!show);
-        btnLogin.setText(show ? "" : "Sign In");
+        btnLogin.setText(show ? "" : "Đăng nhập");
     }
     
     private void navigateToMain() {
