@@ -8,6 +8,7 @@ public class TokenManager {
     private static final String ACCESS_TOKEN_KEY = "access_token";
     private static final String REFRESH_TOKEN_KEY = "refresh_token";
     private static final String TOKEN_EXPIRY_KEY = "token_expiry";
+    private static final String ACCOUNT_ID_KEY = "account_id";
     
     private final SharedPreferences prefs;
     
@@ -44,11 +45,22 @@ public class TokenManager {
         return getAccessToken() != null && getRefreshToken() != null && !isTokenExpired();
     }
     
+    public void saveAccountId(String accountId) {
+        prefs.edit()
+            .putString(ACCOUNT_ID_KEY, accountId)
+            .apply();
+    }
+    
+    public String getAccountId() {
+        return prefs.getString(ACCOUNT_ID_KEY, null);
+    }
+    
     public void clearTokens() {
         prefs.edit()
             .remove(ACCESS_TOKEN_KEY)
             .remove(REFRESH_TOKEN_KEY)
             .remove(TOKEN_EXPIRY_KEY)
+            .remove(ACCOUNT_ID_KEY)
             .apply();
     }
 }

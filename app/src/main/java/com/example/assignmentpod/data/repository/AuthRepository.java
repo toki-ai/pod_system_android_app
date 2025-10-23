@@ -69,6 +69,12 @@ public class AuthRepository {
                                 authResponse.getExpiryTimeMillis()
                         );
                         
+                        // Save account ID if available
+                        if (authResponse.getAccount() != null && authResponse.getAccount().getId() != null) {
+                            tokenManager.saveAccountId(authResponse.getAccount().getId());
+                            Log.d(TAG, "Account ID saved: " + authResponse.getAccount().getId());
+                        }
+                        
                         Log.d(TAG, "Login successful for user: " + email);
                         callback.onSuccess(authResponse);
                     } else {
