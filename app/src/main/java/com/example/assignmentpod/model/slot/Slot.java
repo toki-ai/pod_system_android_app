@@ -2,11 +2,11 @@ package com.example.assignmentpod.model.slot;
 
 import java.time.LocalDateTime;
 
-public class SlotDTO {
+public class Slot {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    public SlotDTO(LocalDateTime startTime, LocalDateTime endTime) {
+    public Slot(LocalDateTime startTime, LocalDateTime endTime) {
         this.startTime = startTime;
         this.endTime = endTime;
     }

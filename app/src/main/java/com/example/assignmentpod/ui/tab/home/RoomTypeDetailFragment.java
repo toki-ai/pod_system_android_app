@@ -14,7 +14,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,13 +24,14 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.model.room.Room;
-import com.example.assignmentpod.model.slot.SlotDTO;
+import com.example.assignmentpod.model.slot.Slot;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RoomTypeDetailFragment extends Fragment {
@@ -162,8 +162,7 @@ public class RoomTypeDetailFragment extends Fragment {
                 // ✅ Load slots for selected date and rooms
                 viewModal.loadSlotsByRoomsAndDate(
                         rooms.stream().map(Room::getId).collect(Collectors.toList()),
-                        etDate.getText().toString()
-                );
+                        convertDisplayDateToApi(etDate.getText().toString()));
             } else {
                 spRoom.setEnabled(false);
                 spSlot.setEnabled(false);
@@ -194,7 +193,18 @@ public class RoomTypeDetailFragment extends Fragment {
         });
     }
 
-    private List<String> filterAvailableSlots(List<SlotDTO> availableSlots) {
+    private String convertDisplayDateToApi(String displayDate) {
+        SimpleDateFormat display = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        SimpleDateFormat api = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        try {
+            return api.format(Objects.requireNonNull(display.parse(displayDate)));
+        } catch (ParseException e) {
+            Log.e(TAG, "Date parse error", e);
+            return displayDate;
+        }
+    }
+
+    private List<String> filterAvailableSlots(List<Slot> availableSlots) {
         List<String> available = availableSlots.stream()
                 .map(s -> String.format("%s - %s",
                         s.getStartTime().toLocalTime(),

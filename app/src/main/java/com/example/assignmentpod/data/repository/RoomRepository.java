@@ -4,10 +4,10 @@ import androidx.annotation.NonNull;
 
 import com.example.assignmentpod.data.remote.api.RoomAPI;
 import com.example.assignmentpod.data.remote.api.RetrofitClient;
+import com.example.assignmentpod.model.response.ApiResponse;
 import com.example.assignmentpod.model.response.PaginationResponse;
 import com.example.assignmentpod.model.room.Room;
-import com.example.assignmentpod.model.room.RoomResponse;
-import com.example.assignmentpod.model.slot.SlotDTO;
+import com.example.assignmentpod.model.slot.Slot;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +26,7 @@ public class RoomRepository {
     }
 
     public interface SlotListCallback {
-        void onSuccess(List<SlotDTO> slots);
+        void onSuccess(List<Slot> slots);
 
         void onError(String error);
     }
@@ -141,11 +141,10 @@ public class RoomRepository {
     }
 
     public void getAvailableRoomsByTypeAndDate(int typeId, String date, RoomListCallback callback) {
-        Call<RoomResponse> call = authenticatedAPI.getAvailableRoomsByTypeAndDate(typeId, date);
-        call.enqueue(new Callback<RoomResponse>() {
+        Call<ApiResponse<List<Room>>> call = authenticatedAPI.getAvailableRoomsByTypeAndDate(typeId, date);
+        call.enqueue(new Callback<ApiResponse<List<Room>>>() {
             @Override
-            public void onResponse(@NonNull Call<RoomResponse> call, @NonNull Response<RoomResponse> response) {
-                System.out.println("response la: " + response);
+            public void onResponse(@NonNull Call<ApiResponse<List<Room>>> call, @NonNull Response<ApiResponse<List<Room>>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(response.body().getData());
                 } else {
@@ -154,26 +153,26 @@ public class RoomRepository {
             }
 
             @Override
-            public void onFailure(@NonNull Call<RoomResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<List<Room>>> call, @NonNull Throwable t) {
                 callback.onError("Network error: " + t.getMessage());
             }
         });
     }
 
     public void getSlotsByRoomsAndDate(List<Integer> roomIds, String date, SlotListCallback callback) {
-        Call<List<SlotDTO>> call = authenticatedAPI.getSlotsByRoomsAndDate(roomIds, date);
-        call.enqueue(new Callback<List<SlotDTO>>() {
+        Call<ApiResponse<List<Slot>>> call = authenticatedAPI.getSlotsByRoomsAndDate(roomIds, date);
+        call.enqueue(new Callback<ApiResponse<List<Slot>>>() {
             @Override
-            public void onResponse(Call<List<SlotDTO>> call, Response<List<SlotDTO>> response) {
+            public void onResponse(Call<ApiResponse<List<Slot>>> call, Response<ApiResponse<List<Slot>>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    callback.onSuccess(response.body());
+                    callback.onSuccess(response.body().getData());
                 } else {
                     callback.onError("Failed to get slots: " + response.message());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<SlotDTO>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<List<Slot>>> call, Throwable t) {
                 callback.onError("Network error: " + t.getMessage());
             }
         });

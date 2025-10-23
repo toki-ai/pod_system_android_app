@@ -11,7 +11,7 @@ import com.example.assignmentpod.data.repository.RoomRepository;
 import com.example.assignmentpod.data.repository.RoomTypeRepository;
 import com.example.assignmentpod.model.room.Room;
 import com.example.assignmentpod.model.room.RoomType;
-import com.example.assignmentpod.model.slot.SlotDTO;
+import com.example.assignmentpod.model.slot.Slot;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +26,7 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
     private final MutableLiveData<RoomType> roomTypeLiveData = new MutableLiveData<>();
     private final MutableLiveData<String> selectedDate = new MutableLiveData<>();
-    private final MutableLiveData<List<SlotDTO>> availableSlotsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<Slot>> availableSlotsLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<Room>> availableRoomsLiveData = new MutableLiveData<>();
 
 
@@ -41,7 +41,7 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
     public MutableLiveData<String> getErrorLiveData() { return errorLiveData; }
     public MutableLiveData<RoomType> getRoomTypeLiveData() { return roomTypeLiveData; }
     public MutableLiveData<List<Room>> getAvailableRoomsLiveData() { return availableRoomsLiveData; }
-    public MutableLiveData<List<SlotDTO>> getAvailableSlotsLiveData() { return availableSlotsLiveData; }
+    public MutableLiveData<List<Slot>> getAvailableSlotsLiveData() { return availableSlotsLiveData; }
 
     public void setSelectedDate(String date) {
         selectedDate.setValue(date);
@@ -96,7 +96,7 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
         Log.d(TAG, "Loading slots by roomIds=" + roomIds + " and date=" + date);
         roomRepository.getSlotsByRoomsAndDate(roomIds, date, new RoomRepository.SlotListCallback() {
             @Override
-            public void onSuccess(List<SlotDTO> slots) {
+            public void onSuccess(List<Slot> slots) {
                 isLoadingLiveData.postValue(false);
                 availableSlotsLiveData.postValue(slots);
                 Log.d(TAG, "Fetched " + (slots != null ? slots.size() : 0) + " slots for date: " + date);

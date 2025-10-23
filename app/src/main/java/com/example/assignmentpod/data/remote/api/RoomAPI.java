@@ -3,9 +3,8 @@ package com.example.assignmentpod.data.remote.api;
 import com.example.assignmentpod.model.response.ApiResponse;
 import com.example.assignmentpod.model.response.PaginationResponse;
 import com.example.assignmentpod.model.room.Room;
-import com.example.assignmentpod.model.room.RoomResponse;
 import com.example.assignmentpod.model.room.RoomType;
-import com.example.assignmentpod.model.slot.SlotDTO;
+import com.example.assignmentpod.model.slot.Slot;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,10 +38,10 @@ public interface RoomAPI {
     Call<List<Room>> getAvailableRoomsByRoomTypeId(@Query("typeId") int typeId, @Query("slots") List<String> slots);
 
     @GET("rooms/available-by-type-and-date")
-    Call<RoomResponse> getAvailableRoomsByTypeAndDate(@Query("typeId") int typeId, @Query("date") String date);
+    Call<ApiResponse<List<Room>>> getAvailableRoomsByTypeAndDate(@Query("typeId") int typeId, @Query("date") String date);
 
     @GET("rooms/slots-by-rooms-and-date")
-    Call<List<SlotDTO>> getSlotsByRoomsAndDate(@Query("roomIds") List<Integer> roomIds, @Query("date") String date);
+    Call<ApiResponse<List<Slot>>> getSlotsByRoomsAndDate(@Query("roomIds") List<Integer> roomIds, @Query("date") String date);
 
 
     @GET("rooms/filtered-room")
