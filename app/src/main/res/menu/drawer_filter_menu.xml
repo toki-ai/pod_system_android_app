@@ -66,6 +66,36 @@
 
     <group android:checkableBehavior="none">
         <item
+            android:id="@+id/nav_capacity_title"
+            android:title="Capacity"
+            android:enabled="false" />
+    </group>
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_capacity_all"
+            android:title="All Capacity"
+            android:checkable="true"
+            android:checked="true" />
+        
+        <item
+            android:id="@+id/nav_capacity_1"
+            android:title="1 Person"
+            android:checkable="true" />
+        
+        <item
+            android:id="@+id/nav_capacity_2"
+            android:title="2 People"
+            android:checkable="true" />
+        
+        <item
+            android:id="@+id/nav_capacity_3"
+            android:title="3+ People"
+            android:checkable="true" />
+    </group>
+
+    <group android:checkableBehavior="none">
+        <item
             android:id="@+id/nav_reset_filters"
             android:title="Reset All Filters" />
     </group>
