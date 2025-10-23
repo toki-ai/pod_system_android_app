@@ -46,6 +46,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="← Back to Home"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_marginEnd="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_add_to_cart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🛒 Add to Cart"
+        style="@style/Widget.MaterialComponents.Button" />
 
 </LinearLayout>

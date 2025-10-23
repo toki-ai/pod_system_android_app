@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.data.repository.AuthRepository;
 import com.example.assignmentpod.model.response.PaginationResponse;
+import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.model.room.RoomType;
 import com.example.assignmentpod.model.user.UserProfile;
 import com.example.assignmentpod.ui.LoginActivity;
@@ -41,6 +42,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private static final int SCROLL_THRESHOLD = 3;
 
     private HomeViewModel viewModel;
+    private CartRepository cartRepository;
 
     private AuthRepository authRepository;
 
@@ -49,6 +51,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private ImageView ivFilter, ivCart;
     private TextView tvUserAvatar, tvBranchName;
     private TextView tvEmptyState;
+    private TextView tvUserAvatar, tvBranchName, tvCartBadge;
     private RecyclerView rvRoomTypes;
     private ProgressBar progressBar;
 
@@ -71,6 +74,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         authRepository = new AuthRepository(requireContext());
+        cartRepository = CartRepository.getInstance(requireContext());
     }
 
     @Override
@@ -87,6 +91,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             setupClickListeners();
             setupNavigationDrawer();
             observeViewModel();
+            observeCartCount();
 
             viewModel.refreshData();
             
@@ -103,6 +108,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         ivCart = view.findViewById(R.id.iv_cart);
         tvUserAvatar = view.findViewById(R.id.tv_user_avatar);
         tvBranchName = view.findViewById(R.id.tv_branch_name);
+        tvCartBadge = view.findViewById(R.id.tv_cart_badge);
         rvRoomTypes = view.findViewById(R.id.rv_room_types);
         tvEmptyState = view.findViewById(R.id.tv_empty_state);
         progressBar = view.findViewById(R.id.progress_bar);
@@ -252,7 +258,8 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         tvUserAvatar.setOnClickListener(v -> showUserMenu());
 
         ivCart.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Cart feature coming soon!", Toast.LENGTH_SHORT).show();
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_homeFragment_to_cartFragment);
         });
     }
 
@@ -263,7 +270,20 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         } else {
             tvUserAvatar.setText("U");
         }
-    }    private void showUserMenu() {
+    }
+    
+    private void observeCartCount() {
+        cartRepository.getCartItemCount().observe(getViewLifecycleOwner(), count -> {
+            if (count != null && count > 0) {
+                tvCartBadge.setVisibility(View.VISIBLE);
+                tvCartBadge.setText(String.valueOf(count));
+            } else {
+                tvCartBadge.setVisibility(View.GONE);
+            }
+        });
+    }
+    
+    private void showUserMenu() {
         PopupMenu popup = new PopupMenu(getContext(), tvUserAvatar);
         popup.getMenuInflater().inflate(R.menu.user_popup_menu, popup.getMenu());
 
@@ -289,7 +309,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             public void onSuccess() {
                 if (getActivity() != null && isAdded()) {
                     getActivity().runOnUiThread(() -> {
-                        Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
                         navigateToLogin();
                     });
                 }
@@ -299,7 +319,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             public void onError(String error) {
                 if (getActivity() != null && isAdded()) {
                     getActivity().runOnUiThread(() -> {
-                        Toast.makeText(getContext(), "Logout failed: " + error, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Đăng xuất thất bại: " + error, Toast.LENGTH_SHORT).show();
                     });
                 }
             }
@@ -332,13 +352,27 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             navController.navigate(R.id.action_homeFragment_to_roomTypeDetailFragment, args);
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to room type detail", e);
-            Toast.makeText(getContext(), "Navigation error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Lỗi điều hướng", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onBookClick(RoomType roomType) {
-        Toast.makeText(getContext(), "Booking " + roomType.getName(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Đang đặt: " + roomType.getName(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onAddToCartClick(RoomType roomType) {
+        // Build a minimal Room object to satisfy repository API
+        com.example.assignmentpod.model.room.Room room = new com.example.assignmentpod.model.room.Room();
+        room.setId(roomType.getId());
+        room.setName(roomType.getName());
+        room.setDescription("Room for booking");
+        room.setImage("");
+        room.setRoomType(roomType);
+
+        cartRepository.addToCart(room);
+        Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -403,6 +437,13 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             clearFilters();
             Toast.makeText(getContext(), "All filters cleared", Toast.LENGTH_SHORT).show();
         }
+        if (item.getItemId() == R.id.nav_cart) {
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_homeFragment_to_cartFragment);
+            return true;
+        }
+
+        Toast.makeText(getContext(), "Bộ lọc demo - " + item.getTitle(), Toast.LENGTH_SHORT).show();
         
         return true;
     }

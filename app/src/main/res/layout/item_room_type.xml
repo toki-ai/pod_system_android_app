@@ -96,15 +96,35 @@
 
         </LinearLayout>
 
-        <!-- Book Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_book"
+        <!-- Actions: Book and Add to Cart -->
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ĐẶT PHÒNG"
-            android:textSize="12sp"
-            android:layout_gravity="center_vertical"
-            style="@style/Widget.MaterialComponents.Button" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_book"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ĐẶT PHÒNG"
+                android:textSize="12sp"
+                style="@style/Widget.MaterialComponents.Button" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_to_cart"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                app:icon="@drawable/ic_cart"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white"
+                style="@style/Widget.MaterialComponents.Button"
+                android:contentDescription="Thêm vào giỏ"
+                android:text=""
+                />
+
+        </LinearLayout>
 
     </LinearLayout>
 
