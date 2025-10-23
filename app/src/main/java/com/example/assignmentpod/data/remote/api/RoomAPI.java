@@ -4,6 +4,7 @@ import com.example.assignmentpod.model.response.ApiResponse;
 import com.example.assignmentpod.model.response.PaginationResponse;
 import com.example.assignmentpod.model.room.Room;
 import com.example.assignmentpod.model.room.RoomType;
+import com.example.assignmentpod.model.slot.SlotDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +34,16 @@ public interface RoomAPI {
     @GET("rooms/type/{roomId}")
     Call<List<Room>> getRoomsSameType(@Path("roomId") int roomId);
 
+    @GET("rooms/available-rooms")
+    Call<List<Room>> getAvailableRoomsByRoomTypeId(@Query("typeId") int typeId, @Query("slots") List<String> slots);
+
+    @GET("rooms/available-by-type-and-date")
+    Call<List<Room>> getAvailableRoomsByTypeAndDate(@Query("typeId") int typeId, @Query("date") String date);
+
+    @GET("rooms/slots-by-rooms-and-date")
+    Call<List<SlotDTO>> getSlotsByRoomsAndDate(@Query("roomIds") List<Integer> roomIds, @Query("date") String date);
+
+
     @GET("rooms/filtered-room")
     Call<PaginationResponse<List<Room>>> getFilteredRoom(
             @Query("address") String address,
@@ -48,10 +59,11 @@ public interface RoomAPI {
             @Query("page") int page,
             @Query("take") int take
     );
-    
+
     @GET("room-types/{roomTypeId}")
     Call<ApiResponse<RoomType>> getRoomTypeById(@Path("roomTypeId") int roomTypeId);
-    
+
+
     @GET("room-types/filtered-room-type")
     Call<PaginationResponse<List<RoomType>>> getFilteredRoomTypes(
             @Query("address") String address,
