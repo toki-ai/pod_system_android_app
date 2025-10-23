@@ -29,4 +29,15 @@
     <string name="no_internet">No internet connection available</string>
     <string name="network_error">Network error occurred</string>
     <string name="server_error">Server error. Please try again later</string>
-</resources>
+    
+    <!-- Order History -->
+    <string name="order_history">Order History</string>
+    <string name="no_orders_found">You haven\'t placed any orders yet.</string>
+    <string name="no_orders_message">Start booking your first pod today!</string>
+    <string name="browse_rooms">Browse Rooms</string>
+    <string name="error_loading_orders">Error Loading Orders</string>
+    <string name="retry">Retry</string>
+    <string name="first">First</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="last">Last</string></resources>
