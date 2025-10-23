@@ -1,9 +1,12 @@
 package com.example.assignmentpod.data.repository;
 
+import androidx.annotation.NonNull;
+
 import com.example.assignmentpod.data.remote.api.RoomAPI;
 import com.example.assignmentpod.data.remote.api.RetrofitClient;
 import com.example.assignmentpod.model.response.PaginationResponse;
 import com.example.assignmentpod.model.room.Room;
+import com.example.assignmentpod.model.room.RoomResponse;
 import com.example.assignmentpod.model.slot.SlotDTO;
 
 import java.time.LocalDateTime;
@@ -138,19 +141,20 @@ public class RoomRepository {
     }
 
     public void getAvailableRoomsByTypeAndDate(int typeId, String date, RoomListCallback callback) {
-        Call<List<Room>> call = authenticatedAPI.getAvailableRoomsByTypeAndDate(typeId, date);
-        call.enqueue(new Callback<List<Room>>() {
+        Call<RoomResponse> call = authenticatedAPI.getAvailableRoomsByTypeAndDate(typeId, date);
+        call.enqueue(new Callback<RoomResponse>() {
             @Override
-            public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
+            public void onResponse(@NonNull Call<RoomResponse> call, @NonNull Response<RoomResponse> response) {
+                System.out.println("response la: " + response);
                 if (response.isSuccessful() && response.body() != null) {
-                    callback.onSuccess(response.body());
+                    callback.onSuccess(response.body().getData());
                 } else {
                     callback.onError("Failed to get available rooms by date: " + response.message());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Room>> call, Throwable t) {
+            public void onFailure(@NonNull Call<RoomResponse> call, @NonNull Throwable t) {
                 callback.onError("Network error: " + t.getMessage());
             }
         });

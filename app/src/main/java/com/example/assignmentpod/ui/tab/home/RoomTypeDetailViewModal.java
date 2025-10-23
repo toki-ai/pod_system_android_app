@@ -92,17 +92,6 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
         });
     }
 
-    public void loadAvailableSlots(String date) {
-        List<Room> rooms = availableRoomsLiveData.getValue();
-        if (rooms == null || rooms.isEmpty()) {
-            Log.w(TAG, "No available rooms found to load slots.");
-            availableSlotsLiveData.postValue(Collections.emptyList());
-            return;
-        }
-        List<Integer> roomIds = rooms.stream().map(Room::getId).toList();
-        loadSlotsByRoomsAndDate(roomIds, date);
-    }
-
     public void loadSlotsByRoomsAndDate(List<Integer> roomIds, String date) {
         Log.d(TAG, "Loading slots by roomIds=" + roomIds + " and date=" + date);
         roomRepository.getSlotsByRoomsAndDate(roomIds, date, new RoomRepository.SlotListCallback() {

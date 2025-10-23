@@ -47,8 +47,13 @@ public class RoomTypeDetailFragment extends Fragment {
 
     private int roomTypeId;
     private final String[] SLOT_ARRAY = {
-            "07:00 - 09:00", "09:00 - 11:00", "11:00 - 13:00",
-            "13:00 - 15:00", "15:00 - 17:00", "17:00 - 19:00", "19:00 - 21:00"
+            "07:00 - 09:00",
+            "09:00 - 11:00",
+            "11:00 - 13:00",
+            "13:00 - 15:00",
+            "15:00 - 17:00",
+            "17:00 - 19:00",
+            "19:00 - 21:00"
     };
 
     @Override
@@ -77,23 +82,29 @@ public class RoomTypeDetailFragment extends Fragment {
 
             // ✅ Default date = today
             Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            String today = sdf.format(calendar.getTime());
-            etDate.setText(today);
-            viewModal.setSelectedDate(today);
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            String todayDisplay = displayFormat.format(calendar.getTime()); // display on UI as dd-MM-yyyy
+            String todayApi = apiFormat.format(calendar.getTime()); // api as yyyy-MM-dd
+
+            etDate.setText(todayDisplay);
+            viewModal.setSelectedDate(todayApi);
 
             // ✅ Load room type + available rooms immediately
             viewModal.loadRoomTypeDetail(roomTypeId);
-            viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, today);
+            viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, todayApi);
 
             // ✅ DatePicker -> auto refresh rooms when user changes date
             etDate.setOnClickListener(v -> {
                 Calendar c = Calendar.getInstance();
                 new DatePickerDialog(requireContext(), (DatePicker dp, int year, int month, int day) -> {
-                    String selected = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-                    etDate.setText(selected);
-                    viewModal.setSelectedDate(selected);
-                    viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, selected);
+                    String displayDate = String.format(Locale.getDefault(), "%02d-%02d-%04d", day, month + 1, year);
+                    String apiDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
+
+                    etDate.setText(displayDate);
+                    viewModal.setSelectedDate(apiDate);
+                    viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, apiDate);
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
             });
 
@@ -134,6 +145,7 @@ public class RoomTypeDetailFragment extends Fragment {
         viewModal.getAvailableRoomsLiveData().observe(getViewLifecycleOwner(), rooms -> {
             if (rooms != null && !rooms.isEmpty()) {
                 spRoom.setEnabled(true);
+                spRoom.setPrompt("Chọn phòng");
 
                 List<String> roomNames = rooms.stream()
                         .map(Room::getName)
@@ -144,6 +156,7 @@ public class RoomTypeDetailFragment extends Fragment {
                         android.R.layout.simple_spinner_dropdown_item,
                         roomNames
                 );
+                roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spRoom.setAdapter(roomAdapter);
 
                 // ✅ Load slots for selected date and rooms
@@ -161,24 +174,37 @@ public class RoomTypeDetailFragment extends Fragment {
         // ✅ Observe Available Slots
         viewModal.getAvailableSlotsLiveData().observe(getViewLifecycleOwner(), slots -> {
             if (slots != null && !slots.isEmpty()) {
-                List<String> slotLabels = slots.stream()
-                        .map(s -> String.format("%s - %s",
-                                s.getStartTime().toLocalTime(),
-                                s.getEndTime().toLocalTime()))
-                        .collect(Collectors.toList());
+                spSlot.setPrompt("Chọn khung giờ");
+                List<String> availableSlotLabels = filterAvailableSlots(slots);
 
-                ArrayAdapter<String> slotAdapter = new ArrayAdapter<>(
-                        requireContext(),
-                        android.R.layout.simple_spinner_dropdown_item,
-                        slotLabels
-                );
-                spSlot.setAdapter(slotAdapter);
-                spSlot.setEnabled(true);
+                if (!availableSlotLabels.isEmpty()) {
+                    ArrayAdapter<String> slotAdapter = new ArrayAdapter<>(
+                            requireContext(),
+                            android.R.layout.simple_spinner_item,
+                            availableSlotLabels
+                    );
+                    slotAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spSlot.setAdapter(slotAdapter);
+                    spSlot.setEnabled(true);
+                }
             } else {
                 spSlot.setEnabled(false);
                 spSlot.setAdapter(null);
             }
         });
+    }
+
+    private List<String> filterAvailableSlots(List<SlotDTO> availableSlots) {
+        List<String> available = availableSlots.stream()
+                .map(s -> String.format("%s - %s",
+                        s.getStartTime().toLocalTime(),
+                        s.getEndTime().toLocalTime()))
+                .collect(Collectors.toList());
+
+        // Only keep slots that exist in both arrays
+        return java.util.Arrays.stream(SLOT_ARRAY)
+                .filter(available::contains)
+                .collect(Collectors.toList());
     }
 
 }
