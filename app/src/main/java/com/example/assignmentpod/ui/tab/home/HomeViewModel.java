@@ -49,11 +49,16 @@ public class HomeViewModel extends AndroidViewModel {
         return errorLiveData;
     }
 
+    public interface LoadMoreCallback {
+        void onSuccess(PaginationResponse<List<RoomType>> response, List<RoomType> newRoomTypes);
+        void onError(String error);
+    }
+
     public void loadRoomTypes() {
         Log.d(TAG, "Loading room types...");
         isLoadingLiveData.setValue(true);
         
-        roomTypeRepository.getRoomTypes(1, 20, new RoomTypeRepository.RoomTypesCallback() {
+        roomTypeRepository.getRoomTypes(1, 10, new RoomTypeRepository.RoomTypesCallback() {
             @Override
             public void onSuccess(PaginationResponse<List<RoomType>> response) {
                 isLoadingLiveData.postValue(false);
@@ -72,6 +77,28 @@ public class HomeViewModel extends AndroidViewModel {
                 isLoadingLiveData.postValue(false);
                 errorLiveData.postValue("Failed to load room types: " + error);
                 Log.e(TAG, "Error loading room types: " + error);
+            }
+        });
+    }
+
+    public void loadMoreRoomTypes(int page, int take, LoadMoreCallback callback) {
+        Log.d(TAG, "Loading more room types for page " + page);
+        
+        roomTypeRepository.getRoomTypes(page, take, new RoomTypeRepository.RoomTypesCallback() {
+            @Override
+            public void onSuccess(PaginationResponse<List<RoomType>> response) {
+                if (response.getData() != null) {
+                    callback.onSuccess(response, response.getData());
+                    Log.d(TAG, "Loaded " + response.getData().size() + " more room types");
+                } else {
+                    callback.onError("No data in response");
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError("Failed to load more room types: " + error);
+                Log.e(TAG, "Error loading more room types: " + error);
             }
         });
     }

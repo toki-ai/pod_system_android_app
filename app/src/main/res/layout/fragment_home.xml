@@ -98,6 +98,18 @@
             android:clipToPadding="false"
             tools:listitem="@layout/item_room_type" />
 
+        <TextView
+            android:id="@+id/tv_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Không có phòng nào phù hợp với bộ lọc của bạn"
+            android:textSize="16sp"
+            android:textColor="@color/gray"
+            android:gravity="center"
+            android:visibility="gone"
+            android:paddingHorizontal="32dp" />
+
         <ProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
