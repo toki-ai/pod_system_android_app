@@ -9,8 +9,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.assignmentpod.data.repository.RoomRepository;
 import com.example.assignmentpod.data.repository.RoomTypeRepository;
+import com.example.assignmentpod.data.repository.ServicePackageRepository;
 import com.example.assignmentpod.model.room.Room;
 import com.example.assignmentpod.model.room.RoomType;
+import com.example.assignmentpod.model.servicepackage.ServicePackage;
 import com.example.assignmentpod.model.slot.Slot;
 
 import java.util.Collections;
@@ -21,6 +23,7 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
 
     private final RoomTypeRepository roomTypeRepository;
     private final RoomRepository roomRepository;
+    private final ServicePackageRepository servicePackageRepository;
 
     private final MutableLiveData<Boolean> isLoadingLiveData = new MutableLiveData<>();
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
@@ -28,20 +31,40 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
     private final MutableLiveData<String> selectedDate = new MutableLiveData<>();
     private final MutableLiveData<List<Slot>> availableSlotsLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<Room>> availableRoomsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<ServicePackage>> servicePackagesLiveData = new MutableLiveData<>();
 
 
     public RoomTypeDetailViewModal(@NonNull Application application) {
         super(application);
         roomTypeRepository = new RoomTypeRepository();
         roomRepository = new RoomRepository();
+        servicePackageRepository = new ServicePackageRepository();
     }
 
     // Getters
-    public MutableLiveData<Boolean> getIsLoadingLiveData() { return isLoadingLiveData; }
-    public MutableLiveData<String> getErrorLiveData() { return errorLiveData; }
-    public MutableLiveData<RoomType> getRoomTypeLiveData() { return roomTypeLiveData; }
-    public MutableLiveData<List<Room>> getAvailableRoomsLiveData() { return availableRoomsLiveData; }
-    public MutableLiveData<List<Slot>> getAvailableSlotsLiveData() { return availableSlotsLiveData; }
+    public MutableLiveData<Boolean> getIsLoadingLiveData() {
+        return isLoadingLiveData;
+    }
+
+    public MutableLiveData<String> getErrorLiveData() {
+        return errorLiveData;
+    }
+
+    public MutableLiveData<RoomType> getRoomTypeLiveData() {
+        return roomTypeLiveData;
+    }
+
+    public MutableLiveData<List<Room>> getAvailableRoomsLiveData() {
+        return availableRoomsLiveData;
+    }
+
+    public MutableLiveData<List<Slot>> getAvailableSlotsLiveData() {
+        return availableSlotsLiveData;
+    }
+
+    public MutableLiveData<List<ServicePackage>> getServicePackagesLiveData() {
+        return servicePackagesLiveData;
+    }
 
     public void setSelectedDate(String date) {
         selectedDate.setValue(date);
@@ -108,6 +131,26 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
                 availableSlotsLiveData.postValue(Collections.emptyList());
                 errorLiveData.postValue("Failed to load slots: " + error);
                 Log.e(TAG, "Error fetching slots: " + error);
+            }
+        });
+    }
+
+    public void loadAllServicePackages() {
+        Log.d(TAG, "Loading service packages");
+        servicePackageRepository.getServicePackages(new ServicePackageRepository.ServicePackageCallback() {
+            @Override
+            public void onSuccess(List<ServicePackage> servicePackages) {
+                isLoadingLiveData.postValue(false);
+                servicePackagesLiveData.postValue(servicePackages);
+                Log.d(TAG, "Fetched " + (servicePackages != null ? servicePackages.size() : 0) + " service packages");
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoadingLiveData.postValue(false);
+                servicePackagesLiveData.postValue(Collections.emptyList());
+                errorLiveData.postValue("Failed to load service packages: " + error);
+                Log.e(TAG, "Error fetching service packages: " + error);
             }
         });
     }

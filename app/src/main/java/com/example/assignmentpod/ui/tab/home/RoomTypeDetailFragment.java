@@ -24,6 +24,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.model.room.Room;
+import com.example.assignmentpod.model.servicepackage.ServicePackage;
 import com.example.assignmentpod.model.slot.Slot;
 
 import java.text.ParseException;
@@ -91,9 +92,10 @@ public class RoomTypeDetailFragment extends Fragment {
             etDate.setText(todayDisplay);
             viewModal.setSelectedDate(todayApi);
 
-            // ✅ Load room type + available rooms immediately
+            // ✅ Load room type + available rooms + service packages immediately
             viewModal.loadRoomTypeDetail(roomTypeId);
             viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, todayApi);
+            viewModal.loadAllServicePackages();
 
             // ✅ DatePicker -> auto refresh rooms when user changes date
             etDate.setOnClickListener(v -> {
@@ -189,6 +191,28 @@ public class RoomTypeDetailFragment extends Fragment {
             } else {
                 spSlot.setEnabled(false);
                 spSlot.setAdapter(null);
+            }
+        });
+
+        // ✅ Observe Service Packages
+        viewModal.getServicePackagesLiveData().observe(getViewLifecycleOwner(), servicePackages -> {
+            if (servicePackages != null && !servicePackages.isEmpty()) {
+                spPackage.setPrompt("Chọn gói dịch vụ");
+                List<String> servicePackageLabels = servicePackages.stream()
+                        .map(ServicePackage::getName)
+                        .collect(Collectors.toList());
+
+                ArrayAdapter<String> servicePackageAdapter = new ArrayAdapter<>(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        servicePackageLabels
+                );
+                servicePackageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spPackage.setAdapter(servicePackageAdapter);
+                spPackage.setEnabled(true);
+            } else {
+                spPackage.setEnabled(false);
+                spPackage.setAdapter(null);
             }
         });
     }
