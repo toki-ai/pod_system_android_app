@@ -11,44 +11,47 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.model.room.Room;
+import com.example.assignmentpod.model.room.RoomType;
 import com.example.assignmentpod.model.servicepackage.ServicePackage;
 import com.example.assignmentpod.model.slot.Slot;
+import com.google.android.material.button.MaterialButton;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RoomTypeDetailFragment extends Fragment {
     private static final String TAG = "RoomTypeDetailFragment";
 
+    private CartRepository cartRepository;
+
     private RoomTypeDetailViewModal viewModal;
     private NavController navController;
+    private MaterialButton btnBack, btnAddToCart;
     private TextView tvRoomName, tvPrice, tvDiscount, tvTotalPrice;
     private ImageView imgMain;
-    private Button btnAddToCart, btnBook;
     private EditText etDate;
     private Spinner spSlot, spRoom, spPackage;
 
@@ -83,6 +86,8 @@ public class RoomTypeDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         navController = NavHostFragment.findNavController(this);
         try {
+            cartRepository = CartRepository.getInstance(requireContext());
+
             initViews(view);
             observeViewModal();
             viewModal.loadRoomTypeDetail(roomTypeId);
@@ -135,6 +140,8 @@ public class RoomTypeDetailFragment extends Fragment {
         spRoom = view.findViewById(R.id.spRoom);
         spSlot = view.findViewById(R.id.spSlot);
         spPackage = view.findViewById(R.id.spPackage);
+        btnBack = view.findViewById(R.id.btn_back);
+        btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
     }
 
     @SuppressLint("SetTextI18n")
@@ -235,6 +242,39 @@ public class RoomTypeDetailFragment extends Fragment {
                 spPackage.setAdapter(null);
             }
         });
+    }
+
+    private void setupClickListeners() {
+        btnBack.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.popBackStack();
+        });
+
+        btnAddToCart.setOnClickListener(v -> {
+            addToCart();
+        });
+    }
+
+    private void addToCart() {
+        // Create a mock Room object for cart
+        RoomType roomType = new RoomType();
+        roomType.setId(roomTypeId);
+        roomType.setName(tvRoomName.getText().toString());
+
+        // Parse price as int since RoomType.setPrice() expects int
+        String priceText = tvPrice.getText().toString().replaceAll("[^0-9]", "");
+        int price = priceText.isEmpty() ? 0 : Integer.parseInt(priceText);
+        roomType.setPrice(price);
+
+        Room room = new Room();
+        room.setId(roomId > 0 ? roomId: roomTypeId);
+        room.setName(tvRoomName.getText().toString());
+        room.setDescription("Room for booking");
+        room.setImage("");
+        room.setRoomType(roomType);
+
+        cartRepository.addToCart(room);
+        Toast.makeText(getContext(), "Đã thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
     }
 
     private void updateDiscountAndTotal() {

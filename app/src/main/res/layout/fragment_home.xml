@@ -72,6 +72,21 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
 
+            <TextView
+                android:id="@+id/tv_cart_badge"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/circle_background"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/iv_cart"
+                app:layout_constraintTop_toTopOf="@+id/iv_cart"
+                android:layout_marginTop="-8dp"
+                android:layout_marginEnd="-8dp" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -82,6 +97,18 @@
             android:padding="16dp"
             android:clipToPadding="false"
             tools:listitem="@layout/item_room_type" />
+
+        <TextView
+            android:id="@+id/tv_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Không có phòng nào phù hợp với bộ lọc của bạn"
+            android:textSize="16sp"
+            android:textColor="@color/gray"
+            android:gravity="center"
+            android:visibility="gone"
+            android:paddingHorizontal="32dp" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
