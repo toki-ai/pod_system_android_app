@@ -49,9 +49,8 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private ImageView ivFilter, ivCart;
-    private TextView tvUserAvatar, tvBranchName;
-    private TextView tvEmptyState;
     private TextView tvUserAvatar, tvBranchName, tvCartBadge;
+    private TextView tvEmptyState;
     private RecyclerView rvRoomTypes;
     private ProgressBar progressBar;
 

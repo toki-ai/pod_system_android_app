@@ -15,4 +15,6 @@
     <color name="surface">#FFFFFF</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <color name="text_dark">#212121</color>
+    <color name="green">#4CAF50</color>
 </resources>
