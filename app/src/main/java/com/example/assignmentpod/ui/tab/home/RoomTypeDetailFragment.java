@@ -1,5 +1,8 @@
 package com.example.assignmentpod.ui.tab.home;
 
+import static com.example.assignmentpod.utils.Utils.convertDisplayDateToApi;
+import static com.example.assignmentpod.utils.Utils.formatPrice;
+
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -27,6 +30,7 @@ import com.example.assignmentpod.model.room.Room;
 import com.example.assignmentpod.model.servicepackage.ServicePackage;
 import com.example.assignmentpod.model.slot.Slot;
 
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -139,8 +143,9 @@ public class RoomTypeDetailFragment extends Fragment {
         viewModal.getRoomTypeLiveData().observe(getViewLifecycleOwner(), roomType -> {
             if (roomType != null) {
                 tvRoomName.setText(roomType.getName());
-                tvPrice.setText(roomType.getPrice() + " VND/giờ");
-                tvTotalPrice.setText(roomType.getPrice() + " VND");
+
+                tvPrice.setText(formatPrice(roomType.getPrice()) + " /giờ");
+                tvTotalPrice.setText(formatPrice(roomType.getPrice()));
                 updateDiscountAndTotal();
                 // TODO: Image if needed
             }
@@ -167,7 +172,7 @@ public class RoomTypeDetailFragment extends Fragment {
                 // ✅ Load slots for selected date and rooms
                 viewModal.loadSlotsByRoomsAndDate(
                         rooms.stream().map(Room::getId).collect(Collectors.toList()),
-                        convertDisplayDateToApi(etDate.getText().toString()));
+                        convertDisplayDateToApi(TAG, etDate.getText().toString()));
             } else {
                 spRoom.setEnabled(false);
                 spSlot.setEnabled(false);
@@ -254,19 +259,9 @@ public class RoomTypeDetailFragment extends Fragment {
         double discountedPrice = price * (1 - discountPercent / 100.0);
 
         tvDiscount.setText(String.format(Locale.getDefault(), "-%d%%", discountPercent));
-        tvTotalPrice.setText(String.format(Locale.getDefault(), "%.0f VND", discountedPrice));
+        tvTotalPrice.setText(formatPrice(discountedPrice));
     }
 
-    private String convertDisplayDateToApi(String displayDate) {
-        SimpleDateFormat display = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-        SimpleDateFormat api = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        try {
-            return api.format(Objects.requireNonNull(display.parse(displayDate)));
-        } catch (ParseException e) {
-            Log.e(TAG, "Date parse error", e);
-            return displayDate;
-        }
-    }
 
     private List<String> filterAvailableSlots(List<Slot> availableSlots) {
         LocalTime now = LocalTime.now();
