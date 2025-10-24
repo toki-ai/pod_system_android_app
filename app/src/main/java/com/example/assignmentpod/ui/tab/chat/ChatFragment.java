@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.model.chat.Message;
 import com.example.assignmentpod.ui.adapter.ChatMessageAdapter;
-import com.example.assignmentpod.utils.TokenManager;
+import com.example.assignmentpod.data.local.TokenManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,7 +53,8 @@ public class ChatFragment extends Fragment {
         Log.d(TAG, "ChatFragment created");
         
         // Get account ID from TokenManager
-        accountId = TokenManager.getAccountId();
+        TokenManager tokenManager = new TokenManager(requireContext());
+        accountId = tokenManager.getAccountId();
         if (accountId == null) {
             Log.e(TAG, "Account ID is null!");
             return;
