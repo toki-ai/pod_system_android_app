@@ -29,6 +29,8 @@ import com.example.assignmentpod.model.slot.Slot;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -229,15 +231,23 @@ public class RoomTypeDetailFragment extends Fragment {
     }
 
     private List<String> filterAvailableSlots(List<Slot> availableSlots) {
+        LocalTime now = LocalTime.now();
+
+        // Convert available Slot objects to "HH:mm - HH:mm" strings
         List<String> available = availableSlots.stream()
                 .map(s -> String.format("%s - %s",
-                        s.getStartTime().toLocalTime(),
-                        s.getEndTime().toLocalTime()))
+                        s.getStartTime().toLocalTime().withSecond(0).withNano(0),
+                        s.getEndTime().toLocalTime().withSecond(0).withNano(0)))
                 .collect(Collectors.toList());
 
-        // Only keep slots that exist in both arrays
-        return java.util.Arrays.stream(SLOT_ARRAY)
+        // Keep only slots that are defined in SLOT_ARRAY AND not ended yet
+        return Arrays.stream(SLOT_ARRAY)
                 .filter(available::contains)
+                .filter(slot -> {
+                    String[] parts = slot.split(" - ");
+                    LocalTime end = LocalTime.parse(parts[1]);
+                    return end.isAfter(now); // Only keep ongoing or future slots
+                })
                 .collect(Collectors.toList());
     }
 
