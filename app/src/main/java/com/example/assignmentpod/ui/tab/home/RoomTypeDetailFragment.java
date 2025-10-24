@@ -141,7 +141,8 @@ public class RoomTypeDetailFragment extends Fragment {
                 tvRoomName.setText(roomType.getName());
                 tvPrice.setText(roomType.getPrice() + " VND/giờ");
                 tvTotalPrice.setText(roomType.getPrice() + " VND");
-                // TODO: Add discount + image if needed
+                updateDiscountAndTotal();
+                // TODO: Image if needed
             }
         });
 
@@ -212,11 +213,48 @@ public class RoomTypeDetailFragment extends Fragment {
                 servicePackageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spPackage.setAdapter(servicePackageAdapter);
                 spPackage.setEnabled(true);
+
+                // ✅ When user selects a package → update discount and total
+                spPackage.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                        updateDiscountAndTotal();
+                    }
+
+                    @Override
+                    public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                    }
+                });
             } else {
                 spPackage.setEnabled(false);
                 spPackage.setAdapter(null);
             }
         });
+    }
+
+    private void updateDiscountAndTotal() {
+        // Defensive checks to avoid NPE
+        if (viewModal.getServicePackagesLiveData().getValue() == null ||
+                viewModal.getServicePackagesLiveData().getValue().isEmpty() ||
+                viewModal.getRoomTypeLiveData().getValue() == null ||
+                spPackage.getSelectedItemPosition() == android.widget.AdapterView.INVALID_POSITION) {
+            return;
+        }
+
+        List<ServicePackage> packages = viewModal.getServicePackagesLiveData().getValue();
+        int pos = spPackage.getSelectedItemPosition();
+
+        // Extra safety
+        if (pos < 0 || pos >= packages.size()) return;
+
+        ServicePackage selectedPackage = packages.get(pos);
+        int price = viewModal.getRoomTypeLiveData().getValue().getPrice();
+        int discountPercent = selectedPackage.getDiscountPercentage();
+
+        double discountedPrice = price * (1 - discountPercent / 100.0);
+
+        tvDiscount.setText(String.format(Locale.getDefault(), "-%d%%", discountPercent));
+        tvTotalPrice.setText(String.format(Locale.getDefault(), "%.0f VND", discountedPrice));
     }
 
     private String convertDisplayDateToApi(String displayDate) {
