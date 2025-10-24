@@ -89,6 +89,7 @@ public class RoomTypeDetailFragment extends Fragment {
             cartRepository = CartRepository.getInstance(requireContext());
 
             initViews(view);
+//            setupClickListeners();
             observeViewModal();
             viewModal.loadRoomTypeDetail(roomTypeId);
 
@@ -134,13 +135,13 @@ public class RoomTypeDetailFragment extends Fragment {
         tvDiscount = view.findViewById(R.id.tv_room_type_detail_discount);
         imgMain = view.findViewById(R.id.tv_room_type_detail_img_main);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
-        btnBook = view.findViewById(R.id.btn_book_room_type_detail);
+//        btnBook = view.findViewById(R.id.btn_book_room_type_detail);
         etDate = view.findViewById(R.id.et_room_type_detail_date);
         tvTotalPrice = view.findViewById(R.id.tv_room_type_detail_total_price);
         spRoom = view.findViewById(R.id.spRoom);
         spSlot = view.findViewById(R.id.spSlot);
         spPackage = view.findViewById(R.id.spPackage);
-        btnBack = view.findViewById(R.id.btn_back);
+//        btnBack = view.findViewById(R.id.btn_back);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
     }
 
@@ -149,8 +150,8 @@ public class RoomTypeDetailFragment extends Fragment {
         // ✅ Observe Room Type
         viewModal.getRoomTypeLiveData().observe(getViewLifecycleOwner(), roomType -> {
             if (roomType != null) {
+                System.out.println("RoomType's Name is: " + roomType.getName());
                 tvRoomName.setText(roomType.getName());
-
                 tvPrice.setText(formatPrice(roomType.getPrice()) + " /giờ");
                 tvTotalPrice.setText(formatPrice(roomType.getPrice()));
                 updateDiscountAndTotal();
@@ -267,7 +268,8 @@ public class RoomTypeDetailFragment extends Fragment {
         roomType.setPrice(price);
 
         Room room = new Room();
-        room.setId(roomId > 0 ? roomId: roomTypeId);
+        //TODO: set a proper roomId
+        room.setId(roomTypeId);
         room.setName(tvRoomName.getText().toString());
         room.setDescription("Room for booking");
         room.setImage("");
