@@ -1,6 +1,9 @@
 package com.example.assignmentpod.ui;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,13 +13,19 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.assignmentpod.MyApplication;
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.local.database.AppDatabase;
+import com.example.assignmentpod.data.local.database.RoomDAO;
 import com.example.assignmentpod.data.remote.api.RetrofitClient;
 import com.example.assignmentpod.data.repository.AuthRepository;
+import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.utils.LoadingManager;
 import com.example.assignmentpod.utils.MultiStackNavigationManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -29,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
     private AuthRepository authRepository;
+    private CartRepository cartRepository;
     private LoadingManager loadingManager;
     
     // Navigation components
@@ -45,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
 
             authRepository = new AuthRepository(this);
+            cartRepository = CartRepository.getInstance(this);
             loadingManager = new LoadingManager(this);
             navManager = new MultiStackNavigationManager();
             
@@ -60,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
             initNavigationComponents();
             setupBottomNavigation();
             setupBackPressedHandler();
+            checkCartAndShowNotification();
             
             // Set default tab if this is a fresh start
             if (savedInstanceState == null) {
@@ -81,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             
         } catch (Exception e) {
             Log.e(TAG, "Error in onCreate", e);
-            Toast.makeText(this, "Error initializing app", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Lỗi khởi tạo ứng dụng", Toast.LENGTH_LONG).show();
             finish();
         }
     }
@@ -131,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 
             } catch (Exception e) {
                 Log.e(TAG, "Error switching tabs", e);
-                Toast.makeText(this, "Error loading tab", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Lỗi tải tab", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -199,14 +211,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performLogout() {
-        loadingManager.showLoading("Logging out...");
+        loadingManager.showLoading("Đang đăng xuất...");
         
         authRepository.logout(new AuthRepository.LogoutCallback() {
             @Override
             public void onSuccess() {
                 runOnUiThread(() -> {
                     loadingManager.hideLoading();
-                    Toast.makeText(MainActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
                     navigateToLogin();
                 });
             }
@@ -215,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     loadingManager.hideLoading();
-                    Toast.makeText(MainActivity.this, "Logout error: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Lỗi đăng xuất: " + error, Toast.LENGTH_SHORT).show();
                     navigateToLogin();
                 });
             }
@@ -269,5 +281,26 @@ public class MainActivity extends AppCompatActivity {
         if (navManager != null) {
             navManager.clearStates();
         }
+    }
+    
+    private void checkCartAndShowNotification() {
+        cartRepository.getCartItemCount().observe(this, count -> {
+            if (count != null && count > 0) {
+                showCartNotification(count);
+            }
+        });
+    }
+    
+    private void showCartNotification(int itemCount) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MyApplication.CART_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_cart)
+                .setContentTitle("Giỏ hàng")
+                .setContentText("Bạn có " + itemCount + " sản phẩm trong giỏ hàng")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+        
+        notificationManager.notify(1, builder.build());
     }
 }
