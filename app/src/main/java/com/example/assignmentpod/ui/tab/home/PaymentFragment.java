@@ -17,6 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
 
@@ -117,7 +119,10 @@ public class PaymentFragment extends Fragment {
 
         // Action buttons
         if (btnCancel != null) {
-            btnCancel.setOnClickListener(v -> handleCancel());
+            btnCancel.setOnClickListener(v -> {
+                NavController navController = Navigation.findNavController(v);
+                navController.popBackStack();
+            });
         }
 
         if (btnConfirmPayment != null) {
@@ -178,17 +183,11 @@ public class PaymentFragment extends Fragment {
             //TODO: should the total price of selected rooms in the cart
         }
         if (tvDiscountAmount != null) {
-            float discountAmount = ((float) initialPrice * (float)discountPercentage) / 100;
+            float discountAmount = ((float) initialPrice * (float) discountPercentage) / 100;
             tvDiscountAmount.setText("-" + formatPrice(discountAmount));
         }
         if (tvTotalPrice != null) {
             tvTotalPrice.setText(formatPrice(totalPrice));
-        }
-    }
-
-    private void handleCancel() {
-        if (getActivity() != null) {
-            getActivity().onBackPressed();
         }
     }
 
