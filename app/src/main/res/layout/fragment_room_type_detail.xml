@@ -14,23 +14,22 @@
         android:padding="16dp">
 
 
-        <!--            <com.google.android.material.button.MaterialButton-->
-        <!--                android:id="@+id/btn_back"-->
-        <!--                style="@style/Widget.MaterialComponents.Button.OutlinedButton"-->
-        <!--                android:layout_width="wrap_content"-->
-        <!--                android:layout_height="wrap_content"-->
-        <!--                android:layout_weight="1"-->
-        <!--                android:text="← Back to Home" />-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_back"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="← Back to Home" />
 
         <!-- Brand name -->
-        <TextView
-            android:id="@+id/tv_room_type_detail_brand"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="FlexiPod"
-            android:textColor="#025092"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+<!--        <TextView-->
+<!--            android:id="@+id/tv_room_type_detail_brand"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="FlexiPod"-->
+<!--            android:textColor="#025092"-->
+<!--            android:textSize="20sp"-->
+<!--            android:textStyle="bold" />-->
 
         <!-- Main image -->
         <ImageView

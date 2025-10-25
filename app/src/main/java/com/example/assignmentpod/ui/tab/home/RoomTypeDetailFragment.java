@@ -89,7 +89,7 @@ public class RoomTypeDetailFragment extends Fragment {
             cartRepository = CartRepository.getInstance(requireContext());
 
             initViews(view);
-//            setupClickListeners();
+            setupClickListeners();
             observeViewModal();
             viewModal.loadRoomTypeDetail(roomTypeId);
 
@@ -141,7 +141,7 @@ public class RoomTypeDetailFragment extends Fragment {
         spRoom = view.findViewById(R.id.spRoom);
         spSlot = view.findViewById(R.id.spSlot);
         spPackage = view.findViewById(R.id.spPackage);
-//        btnBack = view.findViewById(R.id.btn_back);
+        btnBack = view.findViewById(R.id.btn_back);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
     }
 
