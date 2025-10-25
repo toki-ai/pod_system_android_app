@@ -118,14 +118,23 @@ public class RoomTypeDetailFragment extends Fragment {
             // ✅ DatePicker -> auto refresh rooms when user changes date
             etDate.setOnClickListener(v -> {
                 Calendar c = Calendar.getInstance();
-                new DatePickerDialog(requireContext(), (DatePicker dp, int year, int month, int day) -> {
-                    String displayDate = String.format(Locale.getDefault(), "%02d-%02d-%04d", day, month + 1, year);
-                    String apiDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
+                DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), 
+                    (DatePicker dp, int year, int month, int day) -> {
+                        String displayDate = String.format(Locale.getDefault(), "%02d-%02d-%04d", day, month + 1, year);
+                        String apiDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
 
-                    etDate.setText(displayDate);
-                    viewModal.setSelectedDate(apiDate);
-                    viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, apiDate);
-                }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
+                        etDate.setText(displayDate);
+                        viewModal.setSelectedDate(apiDate);
+                        viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, apiDate);
+                    }, 
+                    c.get(Calendar.YEAR), 
+                    c.get(Calendar.MONTH), 
+                    c.get(Calendar.DAY_OF_MONTH)
+                );
+                
+                // ✅ Set minimum date to today (disable past dates)
+                datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+                datePickerDialog.show();
             });
 
 
@@ -254,7 +263,8 @@ public class RoomTypeDetailFragment extends Fragment {
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
-            navController.popBackStack();
+            // Navigate to home and clear back stack
+            navController.navigate(R.id.homeFragment);
         });
 
         btnAddToCart.setOnClickListener(v -> {
@@ -331,6 +341,26 @@ public class RoomTypeDetailFragment extends Fragment {
 
     private List<String> filterAvailableSlots(List<Slot> availableSlots) {
         LocalTime now = LocalTime.now();
+        
+        // Get selected date from the date picker
+        String selectedDateText = etDate.getText().toString();
+        
+        // Convert display date (dd-MM-yyyy) to comparable format
+        Calendar selectedCalendar = Calendar.getInstance();
+        Calendar todayCalendar = Calendar.getInstance();
+        
+        boolean isToday = false;
+        try {
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            selectedCalendar.setTime(displayFormat.parse(selectedDateText));
+            
+            // Check if selected date is today (compare year, month, day)
+            isToday = selectedCalendar.get(Calendar.YEAR) == todayCalendar.get(Calendar.YEAR) &&
+                     selectedCalendar.get(Calendar.MONTH) == todayCalendar.get(Calendar.MONTH) &&
+                     selectedCalendar.get(Calendar.DAY_OF_MONTH) == todayCalendar.get(Calendar.DAY_OF_MONTH);
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing selected date", e);
+        }
 
         // Convert available Slot objects to "HH:mm - HH:mm" strings
         List<String> available = availableSlots.stream()
@@ -339,13 +369,20 @@ public class RoomTypeDetailFragment extends Fragment {
                         s.getEndTime().toLocalTime().withSecond(0).withNano(0)))
                 .collect(Collectors.toList());
 
-        // Keep only slots that are defined in SLOT_ARRAY AND not ended yet
+        // Filter slots
+        final boolean isTodayFinal = isToday;
         return Arrays.stream(SLOT_ARRAY)
                 .filter(available::contains)
                 .filter(slot -> {
-                    String[] parts = slot.split(" - ");
-                    LocalTime end = LocalTime.parse(parts[1]);
-                    return end.isAfter(now); // Only keep ongoing or future slots
+                    // Only filter by time if the selected date is today
+                    if (isTodayFinal) {
+                        String[] parts = slot.split(" - ");
+                        LocalTime end = LocalTime.parse(parts[1]);
+                        return end.isAfter(now); // Only keep ongoing or future slots for today
+                    } else {
+                        // For future dates, show all available slots
+                        return true;
+                    }
                 })
                 .collect(Collectors.toList());
     }
