@@ -33,6 +33,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.HashMap;
 import java.util.Map;
 
+import vn.zalopay.sdk.ZaloPaySDK;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
@@ -302,5 +304,13 @@ public class MainActivity extends AppCompatActivity {
                 .setAutoCancel(true);
         
         notificationManager.notify(1, builder.build());
+    }
+    
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d(TAG, "onNewIntent called");
+        // Handle ZaloPay callback
+        ZaloPaySDK.getInstance().onResult(intent);
     }
 }

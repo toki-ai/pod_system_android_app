@@ -120,3 +120,6 @@ tmp/
 # Test results
 test-results/
 junit-reports/
+
+# External Lib
+/ZaloPayLib
