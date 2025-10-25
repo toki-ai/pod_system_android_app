@@ -22,37 +22,37 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
                 android:text="Đơn đặt"
-                android:textSize="24sp"
-                android:textStyle="bold"
                 android:textColor="@color/primary"
-                android:layout_marginBottom="24dp" />
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
             <!-- Room Image and Details -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
 
                 <!-- Room Image -->
                 <ImageView
                     android:id="@+id/room_image"
                     android:layout_width="200dp"
                     android:layout_height="193dp"
-                    android:src="@drawable/ic_pod_placeholder"
-                    android:scaleType="centerCrop"
+                    android:layout_marginEnd="20dp"
                     android:background="@drawable/rounded_corner_background"
-                    android:layout_marginEnd="20dp" />
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_pod_placeholder" />
 
                 <!-- Room Details -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
+                    android:gravity="top"
                     android:minHeight="193dp"
-                    android:gravity="top">
+                    android:orientation="vertical">
 
                     <!-- Room Name -->
                     <TextView
@@ -60,31 +60,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Unknown Room Name"
+                        android:textColor="@color/black"
                         android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black" />
+                        android:textStyle="bold" />
 
                     <!-- Price -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp">
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/room_price"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="$0"
-                            android:textSize="16sp"
-                            android:textColor="@color/primary" />
+                            android:textColor="@color/primary"
+                            android:textSize="16sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="/tiếng"
-                            android:textSize="16sp"
-                            android:textColor="@color/black" />
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
 
                     </LinearLayout>
 
@@ -92,33 +92,33 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="12dp">
+                        android:layout_marginTop="12dp"
+                        android:orientation="vertical">
 
                         <!-- Address -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="12dp">
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Địa chỉ:"
+                                android:textColor="@color/black"
                                 android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/room_address"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
                                 android:layout_weight="1"
                                 android:text="Unknown Address"
-                                android:textSize="14sp"
                                 android:textColor="@color/black"
-                                android:layout_marginStart="3dp" />
+                                android:textSize="14sp" />
 
                         </LinearLayout>
 
@@ -126,26 +126,26 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="12dp">
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Ngày:"
+                                android:textColor="@color/black"
                                 android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/booked_date"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
                                 android:layout_weight="1"
                                 android:text="Unknown Date"
-                                android:textSize="14sp"
                                 android:textColor="@color/black"
-                                android:layout_marginStart="3dp" />
+                                android:textSize="14sp" />
 
                         </LinearLayout>
 
@@ -153,26 +153,26 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="12dp">
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Khung giờ:"
+                                android:textColor="@color/black"
                                 android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/booked_slot"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
                                 android:layout_weight="1"
                                 android:text="Unknown Time Slots"
-                                android:textSize="14sp"
                                 android:textColor="@color/black"
-                                android:layout_marginStart="3dp" />
+                                android:textSize="14sp" />
 
                         </LinearLayout>
 
@@ -180,26 +180,26 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="12dp">
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Phòng:"
+                                android:textColor="@color/black"
                                 android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/selected_rooms"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
                                 android:layout_weight="1"
                                 android:text="Unknown Rooms"
-                                android:textSize="14sp"
                                 android:textColor="@color/black"
-                                android:layout_marginStart="3dp" />
+                                android:textSize="14sp" />
 
                         </LinearLayout>
 
@@ -213,19 +213,19 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Gói dịch vụ:"
+                                android:textColor="@color/black"
                                 android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/booked_package"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
                                 android:layout_weight="1"
                                 android:text="Unknown Package"
-                                android:textSize="14sp"
                                 android:textColor="@color/black"
-                                android:layout_marginStart="3dp" />
+                                android:textSize="14sp" />
 
                         </LinearLayout>
 
@@ -241,8 +241,8 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/gray"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"
+            android:background="@color/gray" />
 
         <!-- Price Breakdown Section -->
         <LinearLayout
@@ -255,25 +255,25 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Tổng các phòng:"
-                    android:textSize="14sp"
-                    android:textColor="@color/gray" />
+                    android:textColor="@color/gray"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/total_rooms_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
+                    android:textColor="@color/black"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black" />
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -281,25 +281,25 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Giảm giá:"
-                    android:textSize="14sp"
-                    android:textColor="@color/gray" />
+                    android:textColor="@color/gray"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/discount_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$0"
+                    android:textColor="@color/black"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black" />
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -309,8 +309,8 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/gray"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"
+            android:background="@color/gray" />
 
         <!-- Total Price Section -->
         <LinearLayout
@@ -324,17 +324,17 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Tổng đơn:"
-                android:textSize="14sp"
-                android:textColor="@color/gray" />
+                android:textColor="@color/gray"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/total_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="$0"
+                android:textColor="@color/primary"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary" />
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -348,43 +348,52 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="Chọn phương thức thanh toán"
-                android:textSize="20sp"
-                android:textStyle="bold"
                 android:textColor="@color/black"
-                android:layout_marginBottom="16dp" />
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <!-- ZaloPay Option -->
             <LinearLayout
                 android:id="@+id/layout_zalopay"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal"
-                android:background="@color/white"
-                android:padding="16dp"
                 android:layout_marginBottom="12dp"
+                android:background="@color/white"
                 android:clickable="true"
+                android:elevation="2dp"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:elevation="2dp">
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/zalopay_logo" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:gravity="center_vertical"
                     android:text="ZaloPay"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:gravity="center_vertical" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="→"
-                    android:textSize="20sp"
-                    android:textColor="@color/black"
-                    android:gravity="center_vertical" />
+                    android:id="@+id/ic_zalopay_selected"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:gravity="center"
+                    android:text="✓"
+                    android:textColor="#0066CC"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
@@ -393,32 +402,42 @@
                 android:id="@+id/layout_momo"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal"
-                android:background="@color/white"
-                android:padding="16dp"
                 android:layout_marginBottom="24dp"
+                android:background="@color/white"
                 android:clickable="true"
+                android:elevation="2dp"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:elevation="2dp">
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/momo_logo"
+                    android:tint="#D63384" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:gravity="center_vertical"
                     android:text="MoMo"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:gravity="center_vertical" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="→"
-                    android:textSize="20sp"
-                    android:textColor="@color/black"
-                    android:gravity="center_vertical" />
+                    android:id="@+id/ic_momo_selected"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:gravity="center"
+                    android:text="✓"
+                    android:textColor="#D63384"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
@@ -432,22 +451,22 @@
                     android:id="@+id/btn_cancel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
                     android:text="Hủy"
-                    android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/btn_confirm_payment"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@color/primary"
                     android:text="Xác nhận thanh toán"
-                    android:textSize="16sp"
                     android:textColor="@color/white"
-                    android:background="@color/primary" />
+                    android:textSize="16sp" />
 
             </LinearLayout>
 

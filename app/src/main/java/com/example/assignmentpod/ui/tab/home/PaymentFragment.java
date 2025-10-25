@@ -32,6 +32,7 @@ public class PaymentFragment extends Fragment {
     private Button btnCancel, btnConfirmPayment;
     private LinearLayout layoutZaloPay, layoutMoMo;
     private ImageView ivRoomImage;
+    private TextView icZaloPaySelected, icMoMoSelected;
 
     // Data variables
     private String roomTypeAddress, roomTypeName, roomName, bookedDate, bookedSlot, bookedPackage;
@@ -105,6 +106,10 @@ public class PaymentFragment extends Fragment {
         // Payment method layouts
         layoutZaloPay = view.findViewById(R.id.layout_zalopay);
         layoutMoMo = view.findViewById(R.id.layout_momo);
+
+        // Selection icons
+        icZaloPaySelected = view.findViewById(R.id.ic_zalopay_selected);
+        icMoMoSelected = view.findViewById(R.id.ic_momo_selected);
     }
 
     private void setupClickListeners() {
@@ -133,19 +138,32 @@ public class PaymentFragment extends Fragment {
     private void selectPaymentMethod(String method) {
         selectedPaymentMethod = method;
 
-        // Reset all payment method backgrounds
+        // Reset all payment method backgrounds and icons
         if (layoutZaloPay != null) {
             layoutZaloPay.setBackgroundColor(getResources().getColor(android.R.color.white));
         }
         if (layoutMoMo != null) {
             layoutMoMo.setBackgroundColor(getResources().getColor(android.R.color.white));
         }
+        if (icZaloPaySelected != null) {
+            icZaloPaySelected.setVisibility(View.GONE);
+        }
+        if (icMoMoSelected != null) {
+            icMoMoSelected.setVisibility(View.GONE);
+        }
 
         // Highlight selected method
         if (method.equals("ZaloPay") && layoutZaloPay != null) {
             layoutZaloPay.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+            if (icZaloPaySelected != null) {
+                icZaloPaySelected.setVisibility(View.VISIBLE);
+            }
         } else if (method.equals("MoMo") && layoutMoMo != null) {
-            layoutMoMo.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+            // Use pink color for MoMo selection
+            layoutMoMo.setBackgroundColor(0xFFF8D7DA); // Light pink background
+            if (icMoMoSelected != null) {
+                icMoMoSelected.setVisibility(View.VISIBLE);
+            }
         }
 
         Toast.makeText(getContext(), "Selected: " + method, Toast.LENGTH_SHORT).show();
