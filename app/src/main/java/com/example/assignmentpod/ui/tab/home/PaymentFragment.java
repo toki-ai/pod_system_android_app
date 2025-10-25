@@ -271,24 +271,43 @@ public class PaymentFragment extends Fragment {
 
             if (code.equals("1")) {
                 String token = data.getString("zp_trans_token");
+                Log.d(TAG, "Opening ZaloPay with token: " + token);
+                
                 ZaloPaySDK.getInstance().payOrder(getActivity(), token, "demozpdk://app", new PayOrderListener() {
                     @Override
-                    public void onPaymentSucceeded(String s, String s1, String s2) {
+                    public void onPaymentSucceeded(String transactionId, String zpTransToken, String appTransId) {
                         // Navigate to success screen
-                        Log.d(TAG, "Payment succeeded");
-                        navigateToPaymentSuccess();
+                        Log.d(TAG, "Payment succeeded - transactionId: " + transactionId);
+                        Log.d(TAG, "zpTransToken: " + zpTransToken);
+                        Log.d(TAG, "appTransId: " + appTransId);
+                        
+                        // Use requireActivity().runOnUiThread to ensure we're on UI thread
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                navigateToPaymentSuccess();
+                            });
+                        }
                     }
 
                     @Override
-                    public void onPaymentCanceled(String s, String s1) {
-                        Log.d(TAG, "Payment cancelled");
-                        Toast.makeText(getContext(), "Payment cancelled", Toast.LENGTH_SHORT).show();
+                    public void onPaymentCanceled(String zpTransToken, String appTransId) {
+                        Log.d(TAG, "Payment cancelled - zpTransToken: " + zpTransToken + ", appTransId: " + appTransId);
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                Toast.makeText(getContext(), "Đã hủy thanh toán", Toast.LENGTH_SHORT).show();
+                            });
+                        }
                     }
 
                     @Override
-                    public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
+                    public void onPaymentError(ZaloPayError zaloPayError, String zpTransToken, String appTransId) {
                         Log.e(TAG, "Payment error: " + zaloPayError.toString());
-                        Toast.makeText(getContext(), "Payment failed: " + zaloPayError.toString(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "zpTransToken: " + zpTransToken + ", appTransId: " + appTransId);
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                Toast.makeText(getContext(), "Thanh toán thất bại: " + zaloPayError.toString(), Toast.LENGTH_LONG).show();
+                            });
+                        }
                     }
                 });
             } else {
@@ -318,22 +337,36 @@ public class PaymentFragment extends Fragment {
     }
 
     private void navigateToPaymentSuccess() {
-        // Create bundle with booking data
-        Bundle bundle = new Bundle();
-        bundle.putString("orderId", generateOrderId());
-        bundle.putString("customerName", "Phạm Thị Anh Đào"); // You can get this from user data
-        bundle.putString("totalAmount", tvTotalPrice.getText().toString());
-        bundle.putString("roomName", tvRoomName.getText().toString());
-        bundle.putString("roomPrice", tvRoomPrice.getText().toString());
-        bundle.putString("roomAddress", tvRoomAddress.getText().toString());
-        bundle.putString("bookedDate", tvBookedDate.getText().toString());
-        bundle.putString("bookedSlot", tvBookedSlot.getText().toString());
-        bundle.putString("selectedRooms", tvSelectedRooms.getText().toString());
-        bundle.putString("bookedPackage", tvBookedPackage.getText().toString());
+        try {
+            // Create bundle with booking data
+            Bundle bundle = new Bundle();
+            bundle.putString("orderId", generateOrderId());
+            bundle.putString("customerName", "Phạm Thị Anh Đào"); // You can get this from user data
+            
+            // Pass all the booking information
+            bundle.putString("totalAmount", tvTotalPrice != null ? tvTotalPrice.getText().toString() : "0");
+            bundle.putString("roomName", tvRoomName != null ? tvRoomName.getText().toString() : "Unknown");
+            bundle.putString("roomPrice", tvRoomPrice != null ? tvRoomPrice.getText().toString() : "0");
+            bundle.putString("roomAddress", tvRoomAddress != null ? tvRoomAddress.getText().toString() : "Unknown");
+            bundle.putString("bookedDate", tvBookedDate != null ? tvBookedDate.getText().toString() : "Unknown");
+            bundle.putString("bookedSlot", tvBookedSlot != null ? tvBookedSlot.getText().toString() : "Unknown");
+            bundle.putString("selectedRooms", tvSelectedRooms != null ? tvSelectedRooms.getText().toString() : "Unknown");
+            bundle.putString("bookedPackage", tvBookedPackage != null ? tvBookedPackage.getText().toString() : "Unknown");
 
-        // Navigate to payment success screen
-        NavController navController = Navigation.findNavController(requireView());
-        navController.navigate(R.id.action_paymentFragment_to_paymentSuccessFragment, bundle);
+            Log.d(TAG, "Navigating to payment success with bundle: " + bundle.toString());
+            
+            // Navigate to payment success screen
+            if (getView() != null) {
+                NavController navController = Navigation.findNavController(getView());
+                navController.navigate(R.id.action_paymentFragment_to_paymentSuccessFragment, bundle);
+            } else {
+                Log.e(TAG, "View is null, cannot navigate");
+                Toast.makeText(getContext(), "Navigation error", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error navigating to payment success: " + e.getMessage(), e);
+            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String generateOrderId() {
