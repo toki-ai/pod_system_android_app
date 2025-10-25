@@ -63,7 +63,7 @@
                 android:id="@+id/btn_view_rooms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Xem phòng"
+                android:text="View building"
                 android:textColor="@android:color/white"
                 android:background="@android:color/holo_blue_dark"
                 android:layout_marginTop="8dp" />

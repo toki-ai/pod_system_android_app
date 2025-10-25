@@ -144,7 +144,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private void setupClickListeners() {
         btnViewRooms.setOnClickListener(v -> {
             if (selectedBuilding != null) {
-                navigateToHomeWithBuildingFilter(selectedBuilding);
+                // Just show building info, no navigation needed
+                Toast.makeText(requireContext(), 
+                    "Thông tin tòa nhà: " + selectedBuilding.getAddress(), 
+                    Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Building info displayed: " + selectedBuilding.getAddress());
             }
         });
     }
@@ -224,36 +228,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         
         cardBuildingInfo.setVisibility(View.VISIBLE);
         Log.d(TAG, "Showing info for building: " + building.getAddress());
-    }
-
-    private void navigateToHomeWithBuildingFilter(Building building) {
-        try {
-            // Switch to home tab using MainActivity's tab switching mechanism
-            if (getActivity() != null) {
-                com.example.assignmentpod.ui.MainActivity mainActivity = 
-                    (com.example.assignmentpod.ui.MainActivity) getActivity();
-                
-                // Switch to home tab
-                mainActivity.findViewById(R.id.bottom_navigation)
-                    .findViewById(R.id.nav_home).performClick();
-                
-                // Store building filter info for HomeFragment to use
-                Bundle args = new Bundle();
-                args.putInt("buildingId", building.getId());
-                args.putString("buildingName", building.getAddress());
-                
-                // Pass the building info to HomeFragment through a static method or shared preference
-                // For now, we'll use a simple approach with Toast
-                Toast.makeText(requireContext(), 
-                    "Đã chuyển đến trang chủ với bộ lọc tòa nhà: " + building.getAddress(), 
-                    Toast.LENGTH_LONG).show();
-                
-                Log.d(TAG, "Navigated to home with building filter: " + building.getAddress());
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error navigating to home with building filter", e);
-            Toast.makeText(requireContext(), "Lỗi điều hướng", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void requestLocationPermission() {
