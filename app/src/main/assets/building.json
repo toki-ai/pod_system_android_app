@@ -1,0 +1,59 @@
+{
+  "buildings": [
+    {
+      "id": 1,
+      "status": "Active",
+      "address": "123 Nguyen Hue, District 1, Ho Chi Minh City",
+      "description": "Main building in city center",
+      "hotlineNumber": "0901234567",
+      "createdAt": "2025-10-22",
+      "updatedAt": "2025-10-22",
+      "latitude": 10.77276,
+      "longitude": 106.70481
+    },
+    {
+      "id": 2,
+      "status": "Active",
+      "address": "456 Le Lai, District 3, Ho Chi Minh City",
+      "description": "Branch building near university",
+      "hotlineNumber": "0907654321",
+      "createdAt": "2025-10-22",
+      "updatedAt": "2025-10-22",
+      "latitude": 10.78,
+      "longitude": 106.68
+    },
+    {
+      "id": 3,
+      "status": "Active",
+      "address": "12 Pham Ngu Lao, District 1, HCMC",
+      "description": "Co-working building near Ben Thanh Market",
+      "hotlineNumber": "0909111222",
+      "createdAt": "2025-10-22",
+      "updatedAt": "2025-10-22",
+      "latitude": 10.7736,
+      "longitude": 106.69442
+    },
+    {
+      "id": 4,
+      "status": "Active",
+      "address": "88 Vo Van Tan, District 3, HCMC",
+      "description": "New branch with meeting rooms",
+      "hotlineNumber": "0909777333",
+      "createdAt": "2025-10-22",
+      "updatedAt": "2025-10-22",
+      "latitude": 10.788,
+      "longitude": 106.675
+    },
+    {
+      "id": 5,
+      "status": "Active",
+      "address": "45 Tran Hung Dao, District 5, HCMC",
+      "description": "Affordable pods for students",
+      "hotlineNumber": "0909333444",
+      "createdAt": "2025-10-22",
+      "updatedAt": "2025-10-22",
+      "latitude": 10.75611,
+      "longitude": 106.66694
+    }
+  ]
+}
