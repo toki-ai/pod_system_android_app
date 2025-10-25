@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -50,12 +51,15 @@ public class RoomTypeDetailFragment extends Fragment {
     private RoomTypeDetailViewModal viewModal;
     private NavController navController;
     private MaterialButton btnBack, btnAddToCart;
+    private Button btnBook;
     private TextView tvRoomName, tvPrice, tvDiscount, tvTotalPrice;
     private ImageView imgMain;
     private EditText etDate;
     private Spinner spSlot, spRoom, spPackage;
 
     private int roomTypeId;
+    private RoomType internalRoomType;
+    private ServicePackage internalServicePackage;
     private final String[] SLOT_ARRAY = {
             "07:00 - 09:00",
             "09:00 - 11:00",
@@ -65,6 +69,8 @@ public class RoomTypeDetailFragment extends Fragment {
             "17:00 - 19:00",
             "19:00 - 21:00"
     };
+
+    private float internalTotalPrice;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -134,8 +140,6 @@ public class RoomTypeDetailFragment extends Fragment {
         tvPrice = view.findViewById(R.id.tv_room_type_detail_price);
         tvDiscount = view.findViewById(R.id.tv_room_type_detail_discount);
         imgMain = view.findViewById(R.id.tv_room_type_detail_img_main);
-        btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
-//        btnBook = view.findViewById(R.id.btn_book_room_type_detail);
         etDate = view.findViewById(R.id.et_room_type_detail_date);
         tvTotalPrice = view.findViewById(R.id.tv_room_type_detail_total_price);
         spRoom = view.findViewById(R.id.spRoom);
@@ -143,6 +147,7 @@ public class RoomTypeDetailFragment extends Fragment {
         spPackage = view.findViewById(R.id.spPackage);
         btnBack = view.findViewById(R.id.btn_back);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
+        btnBook = view.findViewById(R.id.btn_book_room_type_detail);
     }
 
     @SuppressLint("SetTextI18n")
@@ -150,6 +155,7 @@ public class RoomTypeDetailFragment extends Fragment {
         // ✅ Observe Room Type
         viewModal.getRoomTypeLiveData().observe(getViewLifecycleOwner(), roomType -> {
             if (roomType != null) {
+                this.internalRoomType = roomType;
                 System.out.println("RoomType's Name is: " + roomType.getName());
                 tvRoomName.setText(roomType.getName());
                 tvPrice.setText(formatPrice(roomType.getPrice()) + " /giờ");
@@ -254,6 +260,24 @@ public class RoomTypeDetailFragment extends Fragment {
         btnAddToCart.setOnClickListener(v -> {
             addToCart();
         });
+
+        btnBook.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            Bundle args = new Bundle();
+            this.internalServicePackage = viewModal.getServicePackagesLiveData().getValue().get(spPackage.getSelectedItemPosition());
+
+            args.putString("roomTypeAddress", this.internalRoomType.getBuilding().getAddress());
+            args.putString("roomTypeName", this.internalRoomType.getName());
+            args.putString("roomName", spRoom.getSelectedItem().toString());
+            args.putString("selectedDate", etDate.getText().toString());
+            args.putString("selectedSlot", spSlot.getSelectedItem().toString());
+            args.putString("selectedPackage", spPackage.getSelectedItem().toString());
+            args.putInt("roomTypePrice", this.internalRoomType.getPrice());
+            args.putInt("discountPercentage", this.internalServicePackage.getDiscountPercentage());
+            args.putFloat("totalPrice", this.internalTotalPrice);
+            args.putInt("roomTypeId", this.internalRoomType.getId());
+            navController.navigate(R.id.action_roomTypeDetailFragment_to_paymentFragment, args);
+        });
     }
 
     private void addToCart() {
@@ -299,7 +323,7 @@ public class RoomTypeDetailFragment extends Fragment {
         int discountPercent = selectedPackage.getDiscountPercentage();
 
         double discountedPrice = price * (1 - discountPercent / 100.0);
-
+        this.internalTotalPrice = (float)discountedPrice;
         tvDiscount.setText(String.format(Locale.getDefault(), "-%d%%", discountPercent));
         tvTotalPrice.setText(formatPrice(discountedPrice));
     }

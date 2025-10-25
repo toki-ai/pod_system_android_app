@@ -42,6 +42,9 @@
         <action
             android:id="@+id/action_roomTypeDetailFragment_to_cartFragment"
             app:destination="@id/cartFragment" />
+        <action
+            android:id="@+id/action_roomTypeDetailFragment_to_paymentFragment"
+            app:destination="@id/paymentFragment" />
     </fragment>
 
     <fragment
@@ -52,6 +55,53 @@
         <action
             android:id="@+id/action_cartFragment_to_roomTypeDetailFragment"
             app:destination="@id/roomTypeDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.example.assignmentpod.ui.tab.home.PaymentFragment"
+        android:label="fragment_payment"
+        tools:layout="@layout/fragment_payment">
+        <argument
+            android:name="roomTypeAddress"
+            android:defaultValue="Unkown Address"
+            app:argType="string" />
+        <argument
+            android:name="roomTypeName"
+            android:defaultValue="Unknown Room Type"
+            app:argType="string" />
+        <argument
+            android:name="roomName"
+            android:defaultValue="Unknown Room"
+            app:argType="string" />
+        <argument
+            android:name="selectedDate"
+            android:defaultValue="Unknown Date"
+            app:argType="string"/>
+        <argument
+            android:name="selectedSlot"
+            android:defaultValue="Unknown Slot"
+            app:argType="string" />
+        <argument
+            android:name="selectedPackage"
+            android:defaultValue="Unknown Package"
+            app:argType="string" />
+        <argument
+            android:name="roomTypePrice"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="discountPercentage"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="totalPrice"
+            android:defaultValue="0"
+            app:argType="float" />
+        <argument
+            android:name="roomTypeId"
+            android:defaultValue="0"
+            app:argType="integer" />
     </fragment>
 
 </navigation>
