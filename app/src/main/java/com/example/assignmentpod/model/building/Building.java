@@ -1,32 +1,26 @@
 package com.example.assignmentpod.model.building;
 
-import com.google.gson.annotations.SerializedName;
-
+/**
+ * Model class representing a building from the JSON data.
+ */
 public class Building {
-    @SerializedName("id")
-    private Integer id;
-
-    @SerializedName("status")
-    private BuildingStatus status;
-
-    @SerializedName("address")
+    private int id;
+    private String status;
     private String address;
-
-    @SerializedName("description")
     private String description;
-
-    @SerializedName("hotlineNumber")
     private String hotlineNumber;
-
-    @SerializedName("createdAt")
     private String createdAt;
-
-    @SerializedName("updatedAt")
     private String updatedAt;
+    private double latitude;
+    private double longitude;
 
+    // Default constructor
     public Building() {}
 
-    public Building(Integer id, BuildingStatus status, String address, String description, String hotlineNumber, String createdAt, String updatedAt) {
+    // Constructor with all parameters
+    public Building(int id, String status, String address, String description, 
+                   String hotlineNumber, String createdAt, String updatedAt, 
+                   double latitude, double longitude) {
         this.id = id;
         this.status = status;
         this.address = address;
@@ -34,22 +28,24 @@ public class Building {
         this.hotlineNumber = hotlineNumber;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     // Getters and Setters
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public BuildingStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(BuildingStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -91,5 +87,34 @@ public class Building {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    @Override
+    public String toString() {
+        return "Building{" +
+                "id=" + id +
+                ", status='" + status + '\'' +
+                ", address='" + address + '\'' +
+                ", description='" + description + '\'' +
+                ", hotlineNumber='" + hotlineNumber + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
     }
 }

@@ -120,3 +120,7 @@ tmp/
 # Test results
 test-results/
 junit-reports/
+
+# API Keys and Secrets (DO NOT COMMIT)
+**/google-services.json
+secrets.properties

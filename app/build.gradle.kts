@@ -1,11 +1,26 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
 }
 
+// Read Google Maps API Key from local.properties
+val secretProperties = Properties()
+val secretPropertiesFile = rootProject.file("secrets.properties")
+if (secretPropertiesFile.exists()) {
+    secretProperties.load(FileInputStream(secretPropertiesFile))
+}
+val mapsApiKey: String = secretProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: "YOUR_API_KEY_HERE"
+
 android {
     namespace = "com.example.assignmentpod"
     compileSdk = 36
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.example.assignmentpod"
@@ -15,6 +30,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = mapsApiKey
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -26,6 +44,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
