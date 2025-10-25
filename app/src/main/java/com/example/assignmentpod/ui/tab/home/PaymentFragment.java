@@ -3,7 +3,6 @@ package com.example.assignmentpod.ui.tab.home;
 import static com.example.assignmentpod.utils.Utils.formatPrice;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -23,7 +22,6 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
-import com.example.assignmentpod.ui.MainActivity;
 import com.example.assignmentpod.zalopay.Api.CreateOrder;
 
 import org.json.JSONObject;
@@ -38,7 +36,7 @@ public class PaymentFragment extends Fragment {
     private static final String TAG = "PaymentFragment";
 
     // UI Components
-    private TextView tvRoomName, tvBookedDate, tvBookedSlot, tvBookedPackage, tvRoomPrice, tvRoomAddress, tvSelectedRooms;
+    private TextView tvRoomTypeName, tvBookedDate, tvBookedSlot, tvBookedPackage, tvRoomPrice, tvRoomAddress, tvSelectedRooms;
     private TextView tvTotalRoomsPrice, tvDiscountAmount, tvTotalPrice;
     private Button btnCancel, btnConfirmPayment;
     private LinearLayout layoutZaloPay, layoutMoMo;
@@ -97,7 +95,7 @@ public class PaymentFragment extends Fragment {
         ivRoomImage = view.findViewById(R.id.room_image);
 
         // Room details
-        tvRoomName = view.findViewById(R.id.room_name);
+        tvRoomTypeName = view.findViewById(R.id.room_type_name);
         tvRoomPrice = view.findViewById(R.id.room_price);
         tvRoomAddress = view.findViewById(R.id.room_address);
         tvBookedDate = view.findViewById(R.id.booked_date);
@@ -183,8 +181,8 @@ public class PaymentFragment extends Fragment {
     @SuppressLint("SetTextI18n")
     private void populateData() {
         // Set room information
-        if (tvRoomName != null) {
-            tvRoomName.setText(roomName);
+        if (tvRoomTypeName != null) {
+            tvRoomTypeName.setText(roomTypeName);
         }
         if (tvRoomPrice != null) {
             tvRoomPrice.setText(formatPrice(initialPrice));
@@ -345,7 +343,7 @@ public class PaymentFragment extends Fragment {
             
             // Pass all the booking information
             bundle.putString("totalAmount", tvTotalPrice != null ? tvTotalPrice.getText().toString() : "0");
-            bundle.putString("roomName", tvRoomName != null ? tvRoomName.getText().toString() : "Unknown");
+            bundle.putString("roomName", tvRoomTypeName != null ? tvRoomTypeName.getText().toString() : "Unknown");
             bundle.putString("roomPrice", tvRoomPrice != null ? tvRoomPrice.getText().toString() : "0");
             bundle.putString("roomAddress", tvRoomAddress != null ? tvRoomAddress.getText().toString() : "Unknown");
             bundle.putString("bookedDate", tvBookedDate != null ? tvBookedDate.getText().toString() : "Unknown");

@@ -55,8 +55,10 @@
                     android:orientation="vertical">
 
                     <!-- Room Name -->
+
+                    <!-- Price -->
                     <TextView
-                        android:id="@+id/room_name"
+                        android:id="@+id/room_type_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Unknown Room Name"
@@ -64,7 +66,6 @@
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
-                    <!-- Price -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
