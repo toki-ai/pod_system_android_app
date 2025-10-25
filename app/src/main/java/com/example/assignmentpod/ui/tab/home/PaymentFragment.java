@@ -22,6 +22,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.repository.UserRepository;
+import com.example.assignmentpod.model.user.UserProfile;
 import com.example.assignmentpod.zalopay.Api.CreateOrder;
 
 import org.json.JSONObject;
@@ -49,6 +51,10 @@ public class PaymentFragment extends Fragment {
     private int initialPrice, discountPercentage;
     private float totalPrice;
     private String selectedPaymentMethod = "";
+    
+    // User data
+    private UserRepository userRepository;
+    private UserProfile currentUser;
 
     public PaymentFragment() {
     }
@@ -56,6 +62,13 @@ public class PaymentFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Initialize UserRepository
+        userRepository = new UserRepository(requireContext());
+        
+        // Load user profile
+        loadUserProfile();
+        
         Bundle args = getArguments();
         if (args != null) {
             // Extract data from arguments
@@ -69,6 +82,23 @@ public class PaymentFragment extends Fragment {
             discountPercentage = args.getInt("discountPercentage", 0);
             totalPrice = args.getFloat("totalPrice", 0.0f);
         }
+    }
+    
+    private void loadUserProfile() {
+        userRepository.getUserProfile(new UserRepository.UserProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile userProfile) {
+                currentUser = userProfile;
+                Log.d(TAG, "User profile loaded: " + userProfile.getName());
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Failed to load user profile: " + error);
+                // Set default fallback
+                currentUser = null;
+            }
+        });
     }
 
     @Override
@@ -339,7 +369,16 @@ public class PaymentFragment extends Fragment {
             // Create bundle with booking data
             Bundle bundle = new Bundle();
             bundle.putString("orderId", generateOrderId());
-            bundle.putString("customerName", "Phạm Thị Anh Đào"); // You can get this from user data
+            
+            // Use authenticated user's name or fallback to default
+            String customerName = "Khách hàng"; // Default fallback
+            if (currentUser != null && currentUser.getName() != null && !currentUser.getName().isEmpty()) {
+                customerName = currentUser.getName();
+                Log.d(TAG, "Using authenticated user name: " + customerName);
+            } else {
+                Log.w(TAG, "User profile not loaded, using default customer name");
+            }
+            bundle.putString("customerName", customerName);
             
             // Pass all the booking information
             bundle.putString("totalAmount", tvTotalPrice != null ? tvTotalPrice.getText().toString() : "0");
