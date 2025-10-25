@@ -47,7 +47,20 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.airbnb.android:lottie:6.0.0")
-    
+
+
+    // Google Maps & Location
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.google.android.libraries.places:places:3.3.0")
+
+    // Gson for JSON parsing
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // OkHttp for API calls (Directions API)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+
     // Navigation UI
     implementation("androidx.navigation:navigation-ui:2.7.5")
     
