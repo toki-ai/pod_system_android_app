@@ -3,7 +3,9 @@ package com.example.assignmentpod.ui.tab.home;
 import static com.example.assignmentpod.utils.Utils.formatPrice;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +23,15 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.ui.MainActivity;
+import com.example.assignmentpod.zalopay.Api.CreateOrder;
+
+import org.json.JSONObject;
+
+import vn.zalopay.sdk.Environment;
+import vn.zalopay.sdk.ZaloPayError;
+import vn.zalopay.sdk.ZaloPaySDK;
+import vn.zalopay.sdk.listeners.PayOrderListener;
 
 public class PaymentFragment extends Fragment {
 
@@ -226,10 +237,49 @@ public class PaymentFragment extends Fragment {
     private void handleZaloPayPayment() {
         // TODO: Implement ZaloPay integration
         Toast.makeText(getContext(), "ZaloPay payment initiated", Toast.LENGTH_LONG).show();
-        // Here you would typically:
-        // 1. Initialize ZaloPay SDK
-        // 2. Create payment request
-        // 3. Handle payment response
+        StrictMode.ThreadPolicy policy = new
+                StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        // ZaloPay SDK Init
+        ZaloPaySDK.init(2553, Environment.SANDBOX);
+
+        CreateOrder orderApi = new CreateOrder();
+        try {
+            Log.d("Amount", tvTotalPrice.getText().toString());
+
+            JSONObject data = orderApi.createOrder(tvTotalPrice.getText().toString());
+            String code = data.getString("return_code");
+
+            if (code.equals("1")) {
+                String token = data.getString("zp_trans_token");
+                ZaloPaySDK.getInstance().payOrder(MainActivity.this, token, "demozpdk://app", new PayOrderListener() {
+                    @Override
+                    public void onPaymentSucceeded(String s, String s1, String s2) {
+
+                    }
+
+                    @Override
+                    public void onPaymentCanceled(String s, String s1) {
+
+                    }
+
+                    @Override
+                    public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
+
+                    }
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        ZaloPaySDK.getInstance().onResult(intent);
     }
 
     private void handleMoMoPayment() {

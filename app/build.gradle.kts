@@ -40,14 +40,21 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.navigation.fragment)
     implementation(libs.firebase.database)
+    implementation(fileTree(mapOf(
+        "dir" to "/Users/hoangnguyen/LOCAL_Documents/FPT_University/Fall_2025/PRM392/ZaloPayLib",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation("com.squareup.retrofit2:converter-gson:2.12.0")
     implementation("com.squareup.retrofit2:retrofit:2.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.6.0")
+    implementation("commons-codec:commons-codec:1.14")
     implementation("com.airbnb.android:lottie:6.0.0")
-    
+
     // Navigation UI
     implementation("androidx.navigation:navigation-ui:2.7.5")
     
