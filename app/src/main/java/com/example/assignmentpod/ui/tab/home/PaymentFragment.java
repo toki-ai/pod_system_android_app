@@ -235,10 +235,9 @@ public class PaymentFragment extends Fragment {
     }
 
     private void handleZaloPayPayment() {
-        // TODO: Implement ZaloPay integration
         Toast.makeText(getContext(), "ZaloPay payment initiated", Toast.LENGTH_LONG).show();
-        StrictMode.ThreadPolicy policy = new
-                StrictMode.ThreadPolicy.Builder().permitAll().build();
+        
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
         // ZaloPay SDK Init
@@ -246,48 +245,98 @@ public class PaymentFragment extends Fragment {
 
         CreateOrder orderApi = new CreateOrder();
         try {
-            Log.d("Amount", tvTotalPrice.getText().toString());
+            // Convert float totalPrice to integer (ZaloPay requirement - no decimals allowed)
+            int amountInt = (int) totalPrice;
+            
+            // Validate amount (ZaloPay typically requires 1,000 - 50,000,000 VND)
+            if (amountInt < 1000) {
+                Toast.makeText(getContext(), "Amount too small. Minimum is 1,000 VND", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (amountInt > 50000000) {
+                Toast.makeText(getContext(), "Amount too large. Maximum is 50,000,000 VND", Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            String amountString = String.valueOf(amountInt);
+            
+            Log.d(TAG, "Original totalPrice (float): " + totalPrice);
+            Log.d(TAG, "Converted to integer: " + amountInt);
+            Log.d(TAG, "Final amount string for ZaloPay: " + amountString);
 
-            JSONObject data = orderApi.createOrder(tvTotalPrice.getText().toString());
+            JSONObject data = orderApi.createOrder(amountString);
+            Log.d(TAG, "ZaloPay response: " + data.toString());
+            
             String code = data.getString("return_code");
 
             if (code.equals("1")) {
                 String token = data.getString("zp_trans_token");
-                ZaloPaySDK.getInstance().payOrder(MainActivity.this, token, "demozpdk://app", new PayOrderListener() {
+                ZaloPaySDK.getInstance().payOrder(getActivity(), token, "demozpdk://app", new PayOrderListener() {
                     @Override
                     public void onPaymentSucceeded(String s, String s1, String s2) {
-
+                        // Navigate to success screen
+                        Log.d(TAG, "Payment succeeded");
+                        navigateToPaymentSuccess();
                     }
 
                     @Override
                     public void onPaymentCanceled(String s, String s1) {
-
+                        Log.d(TAG, "Payment cancelled");
+                        Toast.makeText(getContext(), "Payment cancelled", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
-
+                        Log.e(TAG, "Payment error: " + zaloPayError.toString());
+                        Toast.makeText(getContext(), "Payment failed: " + zaloPayError.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
+            } else {
+                String returnMessage = data.optString("return_message", "Unknown error");
+                String subReturnMessage = data.optString("sub_return_message", "");
+                String errorMsg = "Failed to create order: " + returnMessage;
+                if (!subReturnMessage.isEmpty()) {
+                    errorMsg += " (" + subReturnMessage + ")";
+                }
+                Log.e(TAG, errorMsg);
+                Log.e(TAG, "Full response: " + data.toString());
+                Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e(TAG, "Error in ZaloPay payment: " + e.getMessage());
+            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        ZaloPaySDK.getInstance().onResult(intent);
     }
 
     private void handleMoMoPayment() {
         // TODO: Implement MoMo integration
         Toast.makeText(getContext(), "MoMo payment initiated", Toast.LENGTH_LONG).show();
-        // Here you would typically:
-        // 1. Initialize MoMo SDK
-        // 2. Create payment request
-        // 3. Handle payment response
+        // For now, simulate successful payment
+        navigateToPaymentSuccess();
+    }
+
+    private void navigateToPaymentSuccess() {
+        // Create bundle with booking data
+        Bundle bundle = new Bundle();
+        bundle.putString("orderId", generateOrderId());
+        bundle.putString("customerName", "Phạm Thị Anh Đào"); // You can get this from user data
+        bundle.putString("totalAmount", tvTotalPrice.getText().toString());
+        bundle.putString("roomName", tvRoomName.getText().toString());
+        bundle.putString("roomPrice", tvRoomPrice.getText().toString());
+        bundle.putString("roomAddress", tvRoomAddress.getText().toString());
+        bundle.putString("bookedDate", tvBookedDate.getText().toString());
+        bundle.putString("bookedSlot", tvBookedSlot.getText().toString());
+        bundle.putString("selectedRooms", tvSelectedRooms.getText().toString());
+        bundle.putString("bookedPackage", tvBookedPackage.getText().toString());
+
+        // Navigate to payment success screen
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.action_paymentFragment_to_paymentSuccessFragment, bundle);
+    }
+
+    private String generateOrderId() {
+        return "#" + System.currentTimeMillis();
     }
 }
