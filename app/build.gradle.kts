@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.example.assignmentpod"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.assignmentpod"
         minSdk = 35
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -40,11 +40,6 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.navigation.fragment)
     implementation(libs.firebase.database)
-    implementation(fileTree(mapOf(
-        "dir" to "/Users/hoangnguyen/LOCAL_Documents/FPT_University/Fall_2025/PRM392/ZaloPayLib",
-        "include" to listOf("*.aar", "*.jar"),
-        "exclude" to listOf("")
-    )))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

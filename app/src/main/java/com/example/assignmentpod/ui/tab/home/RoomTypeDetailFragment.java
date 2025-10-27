@@ -48,7 +48,7 @@ public class RoomTypeDetailFragment extends Fragment {
 
     private CartRepository cartRepository;
 
-    private RoomTypeDetailViewModal viewModal;
+    private RoomTypeDetailViewModel viewModal;
     private NavController navController;
     private MaterialButton btnBack, btnAddToCart;
     private Button btnBook;
@@ -75,7 +75,7 @@ public class RoomTypeDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModal = new ViewModelProvider(this).get(RoomTypeDetailViewModal.class);
+        viewModal = new ViewModelProvider(this).get(RoomTypeDetailViewModel.class);
         Bundle args = getArguments();
         if (args != null) {
             roomTypeId = args.getInt("roomTypeId", 0);
@@ -272,22 +272,39 @@ public class RoomTypeDetailFragment extends Fragment {
         });
 
         btnBook.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(v);
-            Bundle args = new Bundle();
-            this.internalServicePackage = viewModal.getServicePackagesLiveData().getValue().get(spPackage.getSelectedItemPosition());
+            if (spRoom.getSelectedItem() == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn phòng!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            args.putString("roomTypeAddress", this.internalRoomType.getBuilding().getAddress());
-            args.putString("roomTypeName", this.internalRoomType.getName());
+            if (spSlot.getSelectedItem() == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn khung giờ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (spPackage.getSelectedItem() == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn gói dịch vụ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            internalServicePackage = viewModal.getServicePackagesLiveData().getValue().get(spPackage.getSelectedItemPosition());
+
+            Bundle args = new Bundle();
+            args.putString("roomTypeAddress", internalRoomType.getBuilding().getAddress());
+            args.putString("roomTypeName", internalRoomType.getName());
             args.putString("roomName", spRoom.getSelectedItem().toString());
             args.putString("selectedDate", etDate.getText().toString());
             args.putString("selectedSlot", spSlot.getSelectedItem().toString());
             args.putString("selectedPackage", spPackage.getSelectedItem().toString());
-            args.putInt("roomTypePrice", this.internalRoomType.getPrice());
-            args.putInt("discountPercentage", this.internalServicePackage.getDiscountPercentage());
-            args.putFloat("totalPrice", this.internalTotalPrice);
-            args.putInt("roomTypeId", this.internalRoomType.getId());
-            navController.navigate(R.id.action_roomTypeDetailFragment_to_paymentFragment, args);
+            args.putInt("roomTypePrice", internalRoomType.getPrice());
+            args.putInt("discountPercentage", internalServicePackage.getDiscountPercentage());
+            args.putFloat("totalPrice", internalTotalPrice);
+            args.putInt("roomTypeId", internalRoomType.getId());
+
+            Navigation.findNavController(v)
+                    .navigate(R.id.action_roomTypeDetailFragment_to_paymentFragment, args);
         });
+
     }
 
     private void addToCart() {

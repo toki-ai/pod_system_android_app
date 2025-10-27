@@ -1,39 +1,28 @@
 package com.example.assignmentpod.ui;
 
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
-import android.os.Build;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
-import androidx.fragment.app.FragmentContainerView;
-import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.MyApplication;
 import com.example.assignmentpod.R;
-import com.example.assignmentpod.data.local.database.AppDatabase;
-import com.example.assignmentpod.data.local.database.RoomDAO;
 import com.example.assignmentpod.data.remote.api.RetrofitClient;
 import com.example.assignmentpod.data.repository.AuthRepository;
 import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.utils.LoadingManager;
-import com.example.assignmentpod.utils.MultiStackNavigationManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import vn.zalopay.sdk.ZaloPaySDK;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -42,28 +31,19 @@ public class MainActivity extends AppCompatActivity {
     private AuthRepository authRepository;
     private CartRepository cartRepository;
     private LoadingManager loadingManager;
-    
-    // Navigation components
-    private Map<Integer, FragmentContainerView> navHostMap;
-    private Map<Integer, NavController> navControllerMap;
-    private MultiStackNavigationManager navManager;
-    private int currentNavHostId = R.id.nav_host_home;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         try {
             setContentView(R.layout.activity_main);
 
             authRepository = new AuthRepository(this);
             cartRepository = CartRepository.getInstance(this);
             loadingManager = new LoadingManager(this);
-            navManager = new MultiStackNavigationManager();
-            
-            // Restore navigation state if available
-            navManager.restoreFromBundle(savedInstanceState);
-            
+
             // Check if user is authenticated
             if (!RetrofitClient.isAuthenticated()) {
                 navigateToLogin();
@@ -74,127 +54,109 @@ public class MainActivity extends AppCompatActivity {
             setupBottomNavigation();
             setupBackPressedHandler();
             checkCartAndShowNotification();
-            
-            // Set default tab if this is a fresh start
-            if (savedInstanceState == null) {
-                showNavHost(R.id.nav_host_home);
-                bottomNav.setSelectedItemId(R.id.nav_home);
-                navManager.setCurrentTab(R.id.nav_host_home);
-            } else {
-                // Restore previous tab state
-                int restoredTab = navManager.getCurrentTab();
-                if (restoredTab != 0) {
-                    showNavHost(restoredTab);
-                    // Set bottom nav selection based on restored tab
-                    int menuItemId = getMenuItemIdFromNavHost(restoredTab);
-                    if (menuItemId != 0) {
-                        bottomNav.setSelectedItemId(menuItemId);
-                    }
-                }
-            }
-            
+            // Handle deep link after layout is fully loaded
+            handlePaymentCallback();
+
         } catch (Exception e) {
             Log.e(TAG, "Error in onCreate", e);
             Toast.makeText(this, "Lỗi khởi tạo ứng dụng", Toast.LENGTH_LONG).show();
             finish();
         }
     }
-    
-    private void initNavigationComponents() {
-        // Initialize navigation host containers
-        navHostMap = new HashMap<>();
-        navControllerMap = new HashMap<>();
-        
-        navHostMap.put(R.id.nav_host_home, findViewById(R.id.nav_host_home));
-        navHostMap.put(R.id.nav_host_map, findViewById(R.id.nav_host_map));
-        navHostMap.put(R.id.nav_host_chat, findViewById(R.id.nav_host_chat));
-        navHostMap.put(R.id.nav_host_order, findViewById(R.id.nav_host_order));
-        
-        // Initialize navigation controllers
-        try {
-            navControllerMap.put(R.id.nav_host_home, Navigation.findNavController(this, R.id.nav_host_home));
-            navControllerMap.put(R.id.nav_host_map, Navigation.findNavController(this, R.id.nav_host_map));
-            navControllerMap.put(R.id.nav_host_chat, Navigation.findNavController(this, R.id.nav_host_chat));
-            navControllerMap.put(R.id.nav_host_order, Navigation.findNavController(this, R.id.nav_host_order));
-        } catch (Exception e) {
-            Log.e(TAG, "Error initializing navigation controllers", e);
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Ensure deep link is handled after the activity is fully started
+        handlePaymentCallback();
+    }
+
+    private void handlePaymentCallback() {
+        Intent intent = getIntent();
+        if (intent != null && intent.getData() != null) {
+            Uri data = intent.getData();
+            String scheme = data.getScheme();
+            String host = data.getHost();
+
+            Log.d(TAG, "Received deep link: " + data.toString());
+
+            if ("demozpdk".equals(scheme) && "app".equals(host)) {
+                if (navController == null) {
+                    Log.w(TAG, "NavController is null, reinitializing...");
+                    initNavigationComponents();
+                }
+
+                if (navController != null) {
+                    try {
+                        // Log current destination for debugging
+                        Log.d(TAG, "Current destination: " + (navController.getCurrentDestination() != null
+                                ? navController.getCurrentDestination().getId() : "null"));
+
+                        // Clear back stack up to homeFragment
+                        navController.popBackStack(R.id.homeFragment, false);
+
+                        // Retrieve payment data from SharedPreferences
+                        SharedPreferences prefs = getSharedPreferences("PaymentData", MODE_PRIVATE);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("orderId", prefs.getString("orderId", "#" + System.currentTimeMillis()));
+                        bundle.putString("customerName", prefs.getString("customerName", "Khách hàng"));
+                        bundle.putString("totalAmount", prefs.getString("totalAmount", "1.374.000 VND"));
+                        bundle.putString("roomName", prefs.getString("roomName", "Phòng POD đôi"));
+                        bundle.putString("roomPrice", prefs.getString("roomPrice", "20.000 VND/tiếng"));
+                        bundle.putString("roomAddress", prefs.getString("roomAddress", "Đỗm biết"));
+                        bundle.putString("bookedDate", prefs.getString("bookedDate", "24/01/2024"));
+                        bundle.putString("bookedSlot", prefs.getString("bookedSlot", "7h-9h, 9h-11h"));
+                        bundle.putString("selectedRooms", prefs.getString("selectedRooms", "Phòng 101, Phòng 102"));
+                        bundle.putString("bookedPackage", prefs.getString("bookedPackage", "Gói tuần"));
+
+                        // Navigate to paymentSuccessFragment using global action
+                        navController.navigate(R.id.action_global_to_paymentSuccessFragment, bundle);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error navigating to PaymentSuccessFragment: " + e.getMessage(), e);
+                        Toast.makeText(this, "Lỗi điều hướng sau thanh toán", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Log.e(TAG, "NavController is still null, cannot navigate");
+                    Toast.makeText(this, "Lỗi hệ thống: Không thể điều hướng", Toast.LENGTH_SHORT).show();
+                }
+            }
         }
     }
-    
+
+    private void initNavigationComponents() {
+        try {
+            navController = Navigation.findNavController(this, R.id.nav_host_home);
+            Log.d(TAG, "NavController initialized successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing navigation controller", e);
+            navController = null;
+        }
+    }
+
     private void setupBottomNavigation() {
         bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(item -> {
             try {
                 int itemId = item.getItemId();
-                int targetNavHostId;
-
                 if (itemId == R.id.nav_home) {
-                    targetNavHostId = R.id.nav_host_home;
+                    navController.navigate(R.id.homeFragment);
                 } else if (itemId == R.id.nav_map) {
-                    targetNavHostId = R.id.nav_host_map;
+                    Toast.makeText(this, "Map tab not implemented", Toast.LENGTH_SHORT).show();
+                    return false;
                 } else if (itemId == R.id.nav_chat) {
-                    targetNavHostId = R.id.nav_host_chat;
+                    Toast.makeText(this, "Chat tab not implemented", Toast.LENGTH_SHORT).show();
+                    return false;
                 } else if (itemId == R.id.nav_order) {
-                    targetNavHostId = R.id.nav_host_order;
-                } else {
+                    Toast.makeText(this, "Order tab not implemented", Toast.LENGTH_SHORT).show();
                     return false;
                 }
-
-                showNavHost(targetNavHostId);
                 return true;
-                
             } catch (Exception e) {
                 Log.e(TAG, "Error switching tabs", e);
                 Toast.makeText(this, "Lỗi tải tab", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
-    }
-    
-    private void showNavHost(int navHostId) {
-        // Save current navigation state before switching
-        NavController currentNavController = navControllerMap.get(currentNavHostId);
-        if (currentNavController != null) {
-            navManager.saveNavigationState(currentNavHostId, currentNavController);
-        }
-        
-        // Hide current nav host
-        if (navHostMap.get(currentNavHostId) != null) {
-            navHostMap.get(currentNavHostId).setVisibility(View.GONE);
-        }
-        
-        // Show target nav host
-        if (navHostMap.get(navHostId) != null) {
-            navHostMap.get(navHostId).setVisibility(View.VISIBLE);
-            currentNavHostId = navHostId;
-            navManager.setCurrentTab(navHostId);
-            
-            // Restore navigation state for the new tab
-            NavController targetNavController = navControllerMap.get(navHostId);
-            if (targetNavController != null) {
-                navManager.restoreNavigationState(navHostId, targetNavController);
-            }
-        }
-        
-        Log.d(TAG, "Switched to nav host: " + navHostId);
-    }
-    
-    private int getMenuItemIdFromNavHost(int navHostId) {
-        if (navHostId == R.id.nav_host_home) {
-            return R.id.nav_home;
-        } else if (navHostId == R.id.nav_host_map) {
-            return R.id.nav_map;
-        } else if (navHostId == R.id.nav_host_chat) {
-            return R.id.nav_chat;
-        } else if (navHostId == R.id.nav_host_order) {
-            return R.id.nav_order;
-        } else {
-            return 0;
-        }
-    }
-    
-    public NavController getCurrentNavController() {
-        return navControllerMap.get(currentNavHostId);
     }
 
     @Override
@@ -214,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void performLogout() {
         loadingManager.showLoading("Đang đăng xuất...");
-        
+
         authRepository.logout(new AuthRepository.LogoutCallback() {
             @Override
             public void onSuccess() {
@@ -245,46 +207,24 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        NavController currentNavController = getCurrentNavController();
-        if (currentNavController != null) {
-            return currentNavController.navigateUp() || super.onSupportNavigateUp();
+        if (navController != null) {
+            return navController.navigateUp() || super.onSupportNavigateUp();
         }
         return super.onSupportNavigateUp();
     }
-    
+
     private void setupBackPressedHandler() {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                NavController currentNavController = getCurrentNavController();
-                if (currentNavController != null && !currentNavController.popBackStack()) {
-                    // If no fragments to pop in current tab, handle normally
+                if (navController != null && !navController.popBackStack()) {
                     finish();
                 }
             }
         };
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
-    
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save current navigation state
-        NavController currentNavController = getCurrentNavController();
-        if (currentNavController != null) {
-            navManager.saveNavigationState(currentNavHostId, currentNavController);
-        }
-        navManager.saveToBundle(outState);
-    }
-    
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (navManager != null) {
-            navManager.clearStates();
-        }
-    }
-    
+
     private void checkCartAndShowNotification() {
         cartRepository.getCartItemCount().observe(this, count -> {
             if (count != null && count > 0) {
@@ -292,25 +232,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    
+
     private void showCartNotification(int itemCount) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MyApplication.CART_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_cart)
                 .setContentTitle("Giỏ hàng")
                 .setContentText("Bạn có " + itemCount + " sản phẩm trong giỏ hàng")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
-        
+
         notificationManager.notify(1, builder.build());
     }
-    
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Log.d(TAG, "onNewIntent called");
-        // Handle ZaloPay callback
-        ZaloPaySDK.getInstance().onResult(intent);
+        setIntent(intent);
+        handlePaymentCallback();
     }
 }

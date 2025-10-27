@@ -5,6 +5,13 @@
     android:id="@+id/home_nav"
     app:startDestination="@id/homeFragment">
 
+    <!-- Global action to paymentSuccessFragment -->
+    <action
+        android:id="@+id/action_global_to_paymentSuccessFragment"
+        app:destination="@id/paymentSuccessFragment"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="true" />
+
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.assignmentpod.ui.tab.home.HomeFragment"
@@ -17,7 +24,7 @@
             android:id="@+id/action_homeFragment_to_cartFragment"
             app:destination="@id/cartFragment" />
     </fragment>
-    
+
     <fragment
         android:id="@+id/roomTypeDetailFragment"
         android:name="com.example.assignmentpod.ui.tab.home.RoomTypeDetailFragment"
@@ -64,7 +71,7 @@
         tools:layout="@layout/fragment_payment">
         <argument
             android:name="roomTypeAddress"
-            android:defaultValue="Unkown Address"
+            android:defaultValue="Unknown Address"
             app:argType="string" />
         <argument
             android:name="roomTypeName"
@@ -158,5 +165,4 @@
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="true" />
     </fragment>
-
 </navigation>

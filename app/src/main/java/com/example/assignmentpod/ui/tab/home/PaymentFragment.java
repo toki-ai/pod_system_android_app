@@ -1,10 +1,11 @@
 package com.example.assignmentpod.ui.tab.home;
 
-import static com.example.assignmentpod.utils.Utils.formatPrice;
-
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,20 +19,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.data.repository.UserRepository;
 import com.example.assignmentpod.model.user.UserProfile;
-import com.example.assignmentpod.zalopay.Api.CreateOrder;
-
-import org.json.JSONObject;
-
-import vn.zalopay.sdk.Environment;
-import vn.zalopay.sdk.ZaloPayError;
-import vn.zalopay.sdk.ZaloPaySDK;
-import vn.zalopay.sdk.listeners.PayOrderListener;
+import com.example.assignmentpod.utils.Utils;
 
 public class PaymentFragment extends Fragment {
 
@@ -47,12 +42,12 @@ public class PaymentFragment extends Fragment {
 
     // Data variables
     private String roomTypeAddress, roomTypeName, roomName, bookedDate, bookedSlot, bookedPackage;
-    //TODO: roomName should be a list of selection from the detail
     private int initialPrice, discountPercentage;
     private float totalPrice;
     private String selectedPaymentMethod = "";
-    
-    // User data
+
+    // ViewModel and Repository
+    private PaymentViewModel paymentViewModel;
     private UserRepository userRepository;
     private UserProfile currentUser;
 
@@ -62,16 +57,17 @@ public class PaymentFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        // Initialize UserRepository
+
+        // Initialize ViewModel and Repository
+        paymentViewModel = new ViewModelProvider(this).get(PaymentViewModel.class);
         userRepository = new UserRepository(requireContext());
-        
+
         // Load user profile
         loadUserProfile();
-        
+
+        // Extract data from arguments
         Bundle args = getArguments();
         if (args != null) {
-            // Extract data from arguments
             roomTypeAddress = args.getString("roomTypeAddress", "Unknown Address");
             roomTypeName = args.getString("roomTypeName", "Unknown Room Type");
             roomName = args.getString("roomName", "Unknown Room");
@@ -83,7 +79,7 @@ public class PaymentFragment extends Fragment {
             totalPrice = args.getFloat("totalPrice", 0.0f);
         }
     }
-    
+
     private void loadUserProfile() {
         userRepository.getUserProfile(new UserRepository.UserProfileCallback() {
             @Override
@@ -95,7 +91,6 @@ public class PaymentFragment extends Fragment {
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Failed to load user profile: " + error);
-                // Set default fallback
                 currentUser = null;
             }
         });
@@ -107,6 +102,7 @@ public class PaymentFragment extends Fragment {
         try {
             initViews(view);
             setupClickListeners();
+            observeViewModel();
             populateData();
             Log.d(TAG, "PaymentFragment setup completed successfully");
         } catch (Exception e) {
@@ -121,10 +117,7 @@ public class PaymentFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        // Room image
         ivRoomImage = view.findViewById(R.id.room_image);
-
-        // Room details
         tvRoomTypeName = view.findViewById(R.id.room_type_name);
         tvRoomPrice = view.findViewById(R.id.room_price);
         tvRoomAddress = view.findViewById(R.id.room_address);
@@ -132,27 +125,18 @@ public class PaymentFragment extends Fragment {
         tvBookedSlot = view.findViewById(R.id.booked_slot);
         tvSelectedRooms = view.findViewById(R.id.selected_rooms);
         tvBookedPackage = view.findViewById(R.id.booked_package);
-
-        // Price breakdown
         tvTotalRoomsPrice = view.findViewById(R.id.total_rooms_price);
         tvDiscountAmount = view.findViewById(R.id.discount_amount);
         tvTotalPrice = view.findViewById(R.id.total_price);
-
-        // Buttons
         btnCancel = view.findViewById(R.id.btn_cancel);
         btnConfirmPayment = view.findViewById(R.id.btn_confirm_payment);
-
-        // Payment method layouts
         layoutZaloPay = view.findViewById(R.id.layout_zalopay);
         layoutMoMo = view.findViewById(R.id.layout_momo);
-
-        // Selection icons
         icZaloPaySelected = view.findViewById(R.id.ic_zalopay_selected);
         icMoMoSelected = view.findViewById(R.id.ic_momo_selected);
     }
 
     private void setupClickListeners() {
-        // Payment method selection
         if (layoutZaloPay != null) {
             layoutZaloPay.setOnClickListener(v -> selectPaymentMethod("ZaloPay"));
         }
@@ -161,7 +145,6 @@ public class PaymentFragment extends Fragment {
             layoutMoMo.setOnClickListener(v -> selectPaymentMethod("MoMo"));
         }
 
-        // Action buttons
         if (btnCancel != null) {
             btnCancel.setOnClickListener(v -> {
                 NavController navController = Navigation.findNavController(v);
@@ -174,48 +157,55 @@ public class PaymentFragment extends Fragment {
         }
     }
 
+    private void observeViewModel() {
+        paymentViewModel.getIsLoadingLiveData().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading != null && isLoading) {
+                Toast.makeText(getContext(), "Đang xử lý thanh toán...", Toast.LENGTH_SHORT).show();
+                btnConfirmPayment.setEnabled(false);
+            } else {
+                btnConfirmPayment.setEnabled(true);
+            }
+        });
+
+        paymentViewModel.getPaymentUrlLiveData().observe(getViewLifecycleOwner(), paymentUrl -> {
+            if (paymentUrl != null) {
+                openPaymentUrl(paymentUrl);
+            }
+        });
+
+        paymentViewModel.getErrorLiveData().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void selectPaymentMethod(String method) {
         selectedPaymentMethod = method;
 
-        // Reset all payment method backgrounds and icons
-        if (layoutZaloPay != null) {
-            layoutZaloPay.setBackgroundColor(getResources().getColor(android.R.color.white));
-        }
-        if (layoutMoMo != null) {
-            layoutMoMo.setBackgroundColor(getResources().getColor(android.R.color.white));
-        }
-        if (icZaloPaySelected != null) {
-            icZaloPaySelected.setVisibility(View.GONE);
-        }
-        if (icMoMoSelected != null) {
-            icMoMoSelected.setVisibility(View.GONE);
-        }
+        layoutZaloPay.setBackgroundColor(getResources().getColor(android.R.color.white));
+        layoutMoMo.setBackgroundColor(getResources().getColor(android.R.color.white));
+        icZaloPaySelected.setVisibility(View.GONE);
+        icMoMoSelected.setVisibility(View.GONE);
 
-        // Highlight selected method
         if (method.equals("ZaloPay") && layoutZaloPay != null) {
             layoutZaloPay.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
-            if (icZaloPaySelected != null) {
-                icZaloPaySelected.setVisibility(View.VISIBLE);
-            }
+            icZaloPaySelected.setVisibility(View.VISIBLE);
         } else if (method.equals("MoMo") && layoutMoMo != null) {
-            // Use pink color for MoMo selection
-            layoutMoMo.setBackgroundColor(0xFFF8D7DA); // Light pink background
-            if (icMoMoSelected != null) {
-                icMoMoSelected.setVisibility(View.VISIBLE);
-            }
+            layoutMoMo.setBackgroundColor(0xFFF8D7DA);
+            icMoMoSelected.setVisibility(View.VISIBLE);
         }
 
-        Toast.makeText(getContext(), "Selected: " + method, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Đã chọn: " + method, Toast.LENGTH_SHORT).show();
     }
 
     @SuppressLint("SetTextI18n")
     private void populateData() {
-        // Set room information
         if (tvRoomTypeName != null) {
             tvRoomTypeName.setText(roomTypeName);
         }
         if (tvRoomPrice != null) {
-            tvRoomPrice.setText(formatPrice(initialPrice));
+            tvRoomPrice.setText(Utils.formatPrice(initialPrice));
         }
         if (tvRoomAddress != null) {
             tvRoomAddress.setText(roomTypeAddress);
@@ -232,177 +222,86 @@ public class PaymentFragment extends Fragment {
         if (tvBookedPackage != null) {
             tvBookedPackage.setText(bookedPackage);
         }
-
-        // Set price breakdown
         if (tvTotalRoomsPrice != null) {
-            System.out.println("tong gia cac phong la: " + initialPrice);
-            tvTotalRoomsPrice.setText(formatPrice(initialPrice));
-            //TODO: should the total price of selected rooms in the cart
+            tvTotalRoomsPrice.setText(Utils.formatPrice(initialPrice));
         }
         if (tvDiscountAmount != null) {
             float discountAmount = ((float) initialPrice * (float) discountPercentage) / 100;
-            tvDiscountAmount.setText("-" + formatPrice(discountAmount));
+            tvDiscountAmount.setText("-" + Utils.formatPrice(discountAmount));
         }
         if (tvTotalPrice != null) {
-            tvTotalPrice.setText(formatPrice(totalPrice));
+            tvTotalPrice.setText(Utils.formatPrice(totalPrice));
         }
     }
 
     private void handleConfirmPayment() {
         if (selectedPaymentMethod.isEmpty()) {
-            Toast.makeText(getContext(), "Please select a payment method", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Handle payment confirmation based on selected method
+        int amount = (int) totalPrice; // Chuyển totalPrice thành int
+        if (amount < 1000) {
+            Toast.makeText(getContext(), "Số tiền quá nhỏ. Tối thiểu là 1,000 VND", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (amount > 50000000) {
+            Toast.makeText(getContext(), "Số tiền quá lớn. Tối đa là 50,000,000 VND", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Save payment data to SharedPreferences
+        SharedPreferences prefs = requireContext().getSharedPreferences("PaymentData", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("orderId", "#" + System.currentTimeMillis());
+        editor.putString("customerName", currentUser != null && currentUser.getName() != null ? currentUser.getName() : "Khách hàng");
+        editor.putString("totalAmount", Utils.formatPrice(totalPrice));
+        editor.putString("roomName", roomTypeName);
+        editor.putString("roomPrice", Utils.formatPrice(initialPrice));
+        editor.putString("roomAddress", roomTypeAddress);
+        editor.putString("bookedDate", bookedDate);
+        editor.putString("bookedSlot", bookedSlot);
+        editor.putString("selectedRooms", roomName);
+        editor.putString("bookedPackage", bookedPackage);
+        editor.apply();
+
         if (selectedPaymentMethod.equals("ZaloPay")) {
-            handleZaloPayPayment();
+            paymentViewModel.createZaloPayOrder(requireContext(), amount);
         } else if (selectedPaymentMethod.equals("MoMo")) {
-            handleMoMoPayment();
+            paymentViewModel.createMoMoOrder(requireContext(), amount);
         }
     }
 
-    private void handleZaloPayPayment() {
-        Toast.makeText(getContext(), "ZaloPay payment initiated", Toast.LENGTH_LONG).show();
-        
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        // ZaloPay SDK Init
-        ZaloPaySDK.init(2553, Environment.SANDBOX);
-
-        CreateOrder orderApi = new CreateOrder();
+    private void openPaymentUrl(String paymentUrl) {
         try {
-            // Convert float totalPrice to integer (ZaloPay requirement - no decimals allowed)
-            int amountInt = (int) totalPrice;
-            
-            // Validate amount (ZaloPay typically requires 1,000 - 50,000,000 VND)
-            if (amountInt < 1000) {
-                Toast.makeText(getContext(), "Amount too small. Minimum is 1,000 VND", Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (amountInt > 50000000) {
-                Toast.makeText(getContext(), "Amount too large. Maximum is 50,000,000 VND", Toast.LENGTH_LONG).show();
-                return;
-            }
-            
-            String amountString = String.valueOf(amountInt);
-            
-            Log.d(TAG, "Original totalPrice (float): " + totalPrice);
-            Log.d(TAG, "Converted to integer: " + amountInt);
-            Log.d(TAG, "Final amount string for ZaloPay: " + amountString);
-
-            JSONObject data = orderApi.createOrder(amountString);
-            Log.d(TAG, "ZaloPay response: " + data.toString());
-            
-            String code = data.getString("return_code");
-
-            if (code.equals("1")) {
-                String token = data.getString("zp_trans_token");
-                Log.d(TAG, "Opening ZaloPay with token: " + token);
-                
-                ZaloPaySDK.getInstance().payOrder(getActivity(), token, "demozpdk://app", new PayOrderListener() {
-                    @Override
-                    public void onPaymentSucceeded(String transactionId, String zpTransToken, String appTransId) {
-                        // Navigate to success screen
-                        Log.d(TAG, "Payment succeeded - transactionId: " + transactionId);
-                        Log.d(TAG, "zpTransToken: " + zpTransToken);
-                        Log.d(TAG, "appTransId: " + appTransId);
-                        
-                        // Use requireActivity().runOnUiThread to ensure we're on UI thread
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                navigateToPaymentSuccess();
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onPaymentCanceled(String zpTransToken, String appTransId) {
-                        Log.d(TAG, "Payment cancelled - zpTransToken: " + zpTransToken + ", appTransId: " + appTransId);
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                Toast.makeText(getContext(), "Đã hủy thanh toán", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onPaymentError(ZaloPayError zaloPayError, String zpTransToken, String appTransId) {
-                        Log.e(TAG, "Payment error: " + zaloPayError.toString());
-                        Log.e(TAG, "zpTransToken: " + zpTransToken + ", appTransId: " + appTransId);
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                Toast.makeText(getContext(), "Thanh toán thất bại: " + zaloPayError.toString(), Toast.LENGTH_LONG).show();
-                            });
-                        }
-                    }
-                });
-            } else {
-                String returnMessage = data.optString("return_message", "Unknown error");
-                String subReturnMessage = data.optString("sub_return_message", "");
-                String errorMsg = "Failed to create order: " + returnMessage;
-                if (!subReturnMessage.isEmpty()) {
-                    errorMsg += " (" + subReturnMessage + ")";
-                }
-                Log.e(TAG, errorMsg);
-                Log.e(TAG, "Full response: " + data.toString());
-                Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
-            }
-
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
+            startActivity(browserIntent);
         } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "Error in ZaloPay payment: " + e.getMessage());
-            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Lỗi mở trang thanh toán: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void handleMoMoPayment() {
-        // TODO: Implement MoMo integration
-        Toast.makeText(getContext(), "MoMo payment initiated", Toast.LENGTH_LONG).show();
-        // For now, simulate successful payment
-        navigateToPaymentSuccess();
     }
 
     private void navigateToPaymentSuccess() {
         try {
-            // Create bundle with booking data
             Bundle bundle = new Bundle();
             bundle.putString("orderId", generateOrderId());
-            
-            // Use authenticated user's name or fallback to default
-            String customerName = "Khách hàng"; // Default fallback
-            if (currentUser != null && currentUser.getName() != null && !currentUser.getName().isEmpty()) {
-                customerName = currentUser.getName();
-                Log.d(TAG, "Using authenticated user name: " + customerName);
-            } else {
-                Log.w(TAG, "User profile not loaded, using default customer name");
-            }
+            String customerName = currentUser != null && currentUser.getName() != null ?
+                    currentUser.getName() : "Khách hàng";
             bundle.putString("customerName", customerName);
-            
-            // Pass all the booking information
-            bundle.putString("totalAmount", tvTotalPrice != null ? tvTotalPrice.getText().toString() : "0");
-            bundle.putString("roomName", tvRoomTypeName != null ? tvRoomTypeName.getText().toString() : "Unknown");
-            bundle.putString("roomPrice", tvRoomPrice != null ? tvRoomPrice.getText().toString() : "0");
-            bundle.putString("roomAddress", tvRoomAddress != null ? tvRoomAddress.getText().toString() : "Unknown");
-            bundle.putString("bookedDate", tvBookedDate != null ? tvBookedDate.getText().toString() : "Unknown");
-            bundle.putString("bookedSlot", tvBookedSlot != null ? tvBookedSlot.getText().toString() : "Unknown");
-            bundle.putString("selectedRooms", tvSelectedRooms != null ? tvSelectedRooms.getText().toString() : "Unknown");
-            bundle.putString("bookedPackage", tvBookedPackage != null ? tvBookedPackage.getText().toString() : "Unknown");
+            bundle.putString("totalAmount", tvTotalPrice.getText().toString());
+            bundle.putString("roomName", tvRoomTypeName.getText().toString());
+            bundle.putString("roomPrice", tvRoomPrice.getText().toString());
+            bundle.putString("roomAddress", tvRoomAddress.getText().toString());
+            bundle.putString("bookedDate", tvBookedDate.getText().toString());
+            bundle.putString("bookedSlot", tvBookedSlot.getText().toString());
+            bundle.putString("selectedRooms", tvSelectedRooms.getText().toString());
+            bundle.putString("bookedPackage", tvBookedPackage.getText().toString());
 
-            Log.d(TAG, "Navigating to payment success with bundle: " + bundle.toString());
-            
-            // Navigate to payment success screen
-            if (getView() != null) {
-                NavController navController = Navigation.findNavController(getView());
-                navController.navigate(R.id.action_paymentFragment_to_paymentSuccessFragment, bundle);
-            } else {
-                Log.e(TAG, "View is null, cannot navigate");
-                Toast.makeText(getContext(), "Navigation error", Toast.LENGTH_SHORT).show();
-            }
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_paymentFragment_to_paymentSuccessFragment, bundle);
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to payment success: " + e.getMessage(), e);
-            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Lỗi điều hướng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

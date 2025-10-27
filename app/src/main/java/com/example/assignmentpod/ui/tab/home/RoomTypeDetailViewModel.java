@@ -18,7 +18,7 @@ import com.example.assignmentpod.model.slot.Slot;
 import java.util.Collections;
 import java.util.List;
 
-public class RoomTypeDetailViewModal extends AndroidViewModel {
+public class RoomTypeDetailViewModel extends AndroidViewModel {
     private static final String TAG = "RoomTypeDetailViewModal";
 
     private final RoomTypeRepository roomTypeRepository;
@@ -34,7 +34,7 @@ public class RoomTypeDetailViewModal extends AndroidViewModel {
     private final MutableLiveData<List<ServicePackage>> servicePackagesLiveData = new MutableLiveData<>();
 
 
-    public RoomTypeDetailViewModal(@NonNull Application application) {
+    public RoomTypeDetailViewModel(@NonNull Application application) {
         super(application);
         roomTypeRepository = new RoomTypeRepository();
         roomRepository = new RoomRepository();
