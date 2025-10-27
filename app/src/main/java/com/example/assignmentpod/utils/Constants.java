@@ -51,7 +51,20 @@ public class Constants {
     
     // Content Types
     public static final String CONTENT_TYPE_JSON = "application/json";
-    
+
+    // MoMo constants
+    public static final String MOMO_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create";
+    public static final String MOMO_PARTNER_CODE = "MOMO";
+    public static final String MOMO_ACCESS_KEY = "F8BBA842ECF85";
+    public static final String MOMO_SECRET_KEY = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+    public static final String MOMO_REDIRECT_URL = "demozpdk://app";
+    public static final String MOMO_IPN_URL = "https://webhook.site/123abc";
+
+    // ZaloPay constants
+    public static final String ZALOPAY_ENDPOINT = "https://sb-openapi.zalopay.vn/v2/create";
+    public static final String ZALOPAY_APP_ID = "2553";
+    public static final String ZALOPAY_KEY1 = "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL";
+    public static final String ZALOPAY_REDIRECT_URL = "demozpdk://app";
     private Constants() {
         // Private constructor to prevent instantiation
     }

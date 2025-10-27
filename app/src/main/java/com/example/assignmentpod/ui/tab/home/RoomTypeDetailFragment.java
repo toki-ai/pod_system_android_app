@@ -1,9 +1,21 @@
 package com.example.assignmentpod.ui.tab.home;
 
+import static com.example.assignmentpod.utils.Utils.convertDisplayDateToApi;
+import static com.example.assignmentpod.utils.Utils.formatPrice;
+
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,87 +25,383 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.model.room.Room;
 import com.example.assignmentpod.model.room.RoomType;
+import com.example.assignmentpod.model.servicepackage.ServicePackage;
+import com.example.assignmentpod.model.slot.Slot;
 import com.google.android.material.button.MaterialButton;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
 public class RoomTypeDetailFragment extends Fragment {
-    
-    private TextView tvRoomTypeName;
-    private TextView tvRoomTypePrice;
-    private MaterialButton btnBack, btnAddToCart;
+    private static final String TAG = "RoomTypeDetailFragment";
+
     private CartRepository cartRepository;
-    
+
+    private RoomTypeDetailViewModel viewModal;
+    private NavController navController;
+    private MaterialButton btnBack, btnAddToCart;
+    private Button btnBook;
+    private TextView tvRoomName, tvPrice, tvDiscount, tvTotalPrice;
+    private ImageView imgMain;
+    private EditText etDate;
+    private Spinner spSlot, spRoom, spPackage;
+
     private int roomTypeId;
-    private int roomId;
-    
+    private RoomType internalRoomType;
+    private ServicePackage internalServicePackage;
+    private final String[] SLOT_ARRAY = {
+            "07:00 - 09:00",
+            "09:00 - 11:00",
+            "11:00 - 13:00",
+            "13:00 - 15:00",
+            "15:00 - 17:00",
+            "17:00 - 19:00",
+            "19:00 - 21:00"
+    };
+
+    private float internalTotalPrice;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModal = new ViewModelProvider(this).get(RoomTypeDetailViewModel.class);
+        Bundle args = getArguments();
+        if (args != null) {
+            roomTypeId = args.getInt("roomTypeId", 0);
+        }
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_room_type_detail, container, false);
     }
-    
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        cartRepository = CartRepository.getInstance(requireContext());
-        
-        initViews(view);
-        setupClickListeners();
-        
-        // Get arguments if any
-        Bundle args = getArguments();
-        if (args != null) {
-            String roomTypeName = args.getString("roomTypeName", "Unknown Room Type");
-            int roomTypePrice = args.getInt("roomTypePrice", 0);
-            roomTypeId = args.getInt("roomTypeId", 0);
-            roomId = args.getInt("roomId", 0);
-            
-            tvRoomTypeName.setText(roomTypeName);
-            tvRoomTypePrice.setText(String.format("%,d VND", roomTypePrice));
+        navController = NavHostFragment.findNavController(this);
+        try {
+            cartRepository = CartRepository.getInstance(requireContext());
+
+            initViews(view);
+            setupClickListeners();
+            observeViewModal();
+            viewModal.loadRoomTypeDetail(roomTypeId);
+
+            // ✅ Default date = today
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            String todayDisplay = displayFormat.format(calendar.getTime()); // display on UI as dd-MM-yyyy
+            String todayApi = apiFormat.format(calendar.getTime()); // api as yyyy-MM-dd
+
+            etDate.setText(todayDisplay);
+            viewModal.setSelectedDate(todayApi);
+
+            // ✅ Load room type + available rooms + service packages immediately
+            viewModal.loadRoomTypeDetail(roomTypeId);
+            viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, todayApi);
+            viewModal.loadAllServicePackages();
+
+            // ✅ DatePicker -> auto refresh rooms when user changes date
+            etDate.setOnClickListener(v -> {
+                Calendar c = Calendar.getInstance();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), 
+                    (DatePicker dp, int year, int month, int day) -> {
+                        String displayDate = String.format(Locale.getDefault(), "%02d-%02d-%04d", day, month + 1, year);
+                        String apiDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
+
+                        etDate.setText(displayDate);
+                        viewModal.setSelectedDate(apiDate);
+                        viewModal.loadAvailableRoomsByTypeAndDate(roomTypeId, apiDate);
+                    }, 
+                    c.get(Calendar.YEAR), 
+                    c.get(Calendar.MONTH), 
+                    c.get(Calendar.DAY_OF_MONTH)
+                );
+                
+                // ✅ Set minimum date to today (disable past dates)
+                datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+                datePickerDialog.show();
+            });
+
+
+            Log.d(TAG, "RoomTypeDetailFragment setup completed successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onViewCreated", e);
         }
     }
-    
+
     private void initViews(View view) {
-        tvRoomTypeName = view.findViewById(R.id.tv_room_type_name);
-        tvRoomTypePrice = view.findViewById(R.id.tv_room_type_price);
+        tvRoomName = view.findViewById(R.id.tv_room_type_detail_name);
+        tvPrice = view.findViewById(R.id.tv_room_type_detail_price);
+        tvDiscount = view.findViewById(R.id.tv_room_type_detail_discount);
+        imgMain = view.findViewById(R.id.tv_room_type_detail_img_main);
+        etDate = view.findViewById(R.id.et_room_type_detail_date);
+        tvTotalPrice = view.findViewById(R.id.tv_room_type_detail_total_price);
+        spRoom = view.findViewById(R.id.spRoom);
+        spSlot = view.findViewById(R.id.spSlot);
+        spPackage = view.findViewById(R.id.spPackage);
         btnBack = view.findViewById(R.id.btn_back);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
+        btnBook = view.findViewById(R.id.btn_book_room_type_detail);
     }
-    
+
+    @SuppressLint("SetTextI18n")
+    private void observeViewModal() {
+        // ✅ Observe Room Type
+        viewModal.getRoomTypeLiveData().observe(getViewLifecycleOwner(), roomType -> {
+            if (roomType != null) {
+                this.internalRoomType = roomType;
+                System.out.println("RoomType's Name is: " + roomType.getName());
+                tvRoomName.setText(roomType.getName());
+                tvPrice.setText(formatPrice(roomType.getPrice()) + " /giờ");
+                tvTotalPrice.setText(formatPrice(roomType.getPrice()));
+                updateDiscountAndTotal();
+                // TODO: Image if needed
+            }
+        });
+
+        // ✅ Observe Available Rooms
+        viewModal.getAvailableRoomsLiveData().observe(getViewLifecycleOwner(), rooms -> {
+            if (rooms != null && !rooms.isEmpty()) {
+                spRoom.setEnabled(true);
+                spRoom.setPrompt("Chọn phòng");
+
+                List<String> roomNames = rooms.stream()
+                        .map(Room::getName)
+                        .collect(Collectors.toList());
+
+                ArrayAdapter<String> roomAdapter = new ArrayAdapter<>(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        roomNames
+                );
+                roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spRoom.setAdapter(roomAdapter);
+
+                // ✅ Load slots for selected date and rooms
+                viewModal.loadSlotsByRoomsAndDate(
+                        rooms.stream().map(Room::getId).collect(Collectors.toList()),
+                        convertDisplayDateToApi(TAG, etDate.getText().toString()));
+            } else {
+                spRoom.setEnabled(false);
+                spSlot.setEnabled(false);
+                spSlot.setAdapter(null);
+            }
+        });
+
+        // ✅ Observe Available Slots
+        viewModal.getAvailableSlotsLiveData().observe(getViewLifecycleOwner(), slots -> {
+            if (slots != null && !slots.isEmpty()) {
+                spSlot.setPrompt("Chọn khung giờ");
+                List<String> availableSlotLabels = filterAvailableSlots(slots);
+
+                if (!availableSlotLabels.isEmpty()) {
+                    ArrayAdapter<String> slotAdapter = new ArrayAdapter<>(
+                            requireContext(),
+                            android.R.layout.simple_spinner_item,
+                            availableSlotLabels
+                    );
+                    slotAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spSlot.setAdapter(slotAdapter);
+                    spSlot.setEnabled(true);
+                }
+            } else {
+                spSlot.setEnabled(false);
+                spSlot.setAdapter(null);
+            }
+        });
+
+        // ✅ Observe Service Packages
+        viewModal.getServicePackagesLiveData().observe(getViewLifecycleOwner(), servicePackages -> {
+            if (servicePackages != null && !servicePackages.isEmpty()) {
+                spPackage.setPrompt("Chọn gói dịch vụ");
+                List<String> servicePackageLabels = servicePackages.stream()
+                        .map(ServicePackage::getName)
+                        .collect(Collectors.toList());
+
+                ArrayAdapter<String> servicePackageAdapter = new ArrayAdapter<>(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        servicePackageLabels
+                );
+                servicePackageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spPackage.setAdapter(servicePackageAdapter);
+                spPackage.setEnabled(true);
+
+                // ✅ When user selects a package → update discount and total
+                spPackage.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                        updateDiscountAndTotal();
+                    }
+
+                    @Override
+                    public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                    }
+                });
+            } else {
+                spPackage.setEnabled(false);
+                spPackage.setAdapter(null);
+            }
+        });
+    }
+
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
-            navController.popBackStack();
+            // Navigate to home and clear back stack
+            navController.navigate(R.id.homeFragment);
         });
-        
+
         btnAddToCart.setOnClickListener(v -> {
             addToCart();
         });
+
+        btnBook.setOnClickListener(v -> {
+            if (spRoom.getSelectedItem() == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn phòng!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (spSlot.getSelectedItem() == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn khung giờ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (spPackage.getSelectedItem() == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn gói dịch vụ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            internalServicePackage = viewModal.getServicePackagesLiveData().getValue().get(spPackage.getSelectedItemPosition());
+
+            Bundle args = new Bundle();
+            args.putString("roomTypeAddress", internalRoomType.getBuilding().getAddress());
+            args.putString("roomTypeName", internalRoomType.getName());
+            args.putString("roomName", spRoom.getSelectedItem().toString());
+            args.putString("selectedDate", etDate.getText().toString());
+            args.putString("selectedSlot", spSlot.getSelectedItem().toString());
+            args.putString("selectedPackage", spPackage.getSelectedItem().toString());
+            args.putInt("roomTypePrice", internalRoomType.getPrice());
+            args.putInt("discountPercentage", internalServicePackage.getDiscountPercentage());
+            args.putFloat("totalPrice", internalTotalPrice);
+            args.putInt("roomTypeId", internalRoomType.getId());
+
+            Navigation.findNavController(v)
+                    .navigate(R.id.action_roomTypeDetailFragment_to_paymentFragment, args);
+        });
+
     }
-    
+
     private void addToCart() {
         // Create a mock Room object for cart
         RoomType roomType = new RoomType();
         roomType.setId(roomTypeId);
-        roomType.setName(tvRoomTypeName.getText().toString());
-        
+        roomType.setName(tvRoomName.getText().toString());
+
         // Parse price as int since RoomType.setPrice() expects int
-        String priceText = tvRoomTypePrice.getText().toString().replaceAll("[^0-9]", "");
+        String priceText = tvPrice.getText().toString().replaceAll("[^0-9]", "");
         int price = priceText.isEmpty() ? 0 : Integer.parseInt(priceText);
         roomType.setPrice(price);
-        
+
         Room room = new Room();
-        room.setId(roomId > 0 ? roomId : roomTypeId);
-        room.setName(tvRoomTypeName.getText().toString());
+        //TODO: set a proper roomId
+        room.setId(roomTypeId);
+        room.setName(tvRoomName.getText().toString());
         room.setDescription("Room for booking");
         room.setImage("");
         room.setRoomType(roomType);
-        
+
         cartRepository.addToCart(room);
         Toast.makeText(getContext(), "Đã thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
     }
+
+    private void updateDiscountAndTotal() {
+        // Defensive checks to avoid NPE
+        if (viewModal.getServicePackagesLiveData().getValue() == null ||
+                viewModal.getServicePackagesLiveData().getValue().isEmpty() ||
+                viewModal.getRoomTypeLiveData().getValue() == null ||
+                spPackage.getSelectedItemPosition() == android.widget.AdapterView.INVALID_POSITION) {
+            return;
+        }
+
+        List<ServicePackage> packages = viewModal.getServicePackagesLiveData().getValue();
+        int pos = spPackage.getSelectedItemPosition();
+
+        // Extra safety
+        if (pos < 0 || pos >= packages.size()) return;
+
+        ServicePackage selectedPackage = packages.get(pos);
+        int price = viewModal.getRoomTypeLiveData().getValue().getPrice();
+        int discountPercent = selectedPackage.getDiscountPercentage();
+
+        double discountedPrice = price * (1 - discountPercent / 100.0);
+        this.internalTotalPrice = (float)discountedPrice;
+        tvDiscount.setText(String.format(Locale.getDefault(), "-%d%%", discountPercent));
+        tvTotalPrice.setText(formatPrice(discountedPrice));
+    }
+
+
+    private List<String> filterAvailableSlots(List<Slot> availableSlots) {
+        LocalTime now = LocalTime.now();
+        
+        // Get selected date from the date picker
+        String selectedDateText = etDate.getText().toString();
+        
+        // Convert display date (dd-MM-yyyy) to comparable format
+        Calendar selectedCalendar = Calendar.getInstance();
+        Calendar todayCalendar = Calendar.getInstance();
+        
+        boolean isToday = false;
+        try {
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            selectedCalendar.setTime(displayFormat.parse(selectedDateText));
+            
+            // Check if selected date is today (compare year, month, day)
+            isToday = selectedCalendar.get(Calendar.YEAR) == todayCalendar.get(Calendar.YEAR) &&
+                     selectedCalendar.get(Calendar.MONTH) == todayCalendar.get(Calendar.MONTH) &&
+                     selectedCalendar.get(Calendar.DAY_OF_MONTH) == todayCalendar.get(Calendar.DAY_OF_MONTH);
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing selected date", e);
+        }
+
+        // Convert available Slot objects to "HH:mm - HH:mm" strings
+        List<String> available = availableSlots.stream()
+                .map(s -> String.format("%s - %s",
+                        s.getStartTime().toLocalTime().withSecond(0).withNano(0),
+                        s.getEndTime().toLocalTime().withSecond(0).withNano(0)))
+                .collect(Collectors.toList());
+
+        // Filter slots
+        final boolean isTodayFinal = isToday;
+        return Arrays.stream(SLOT_ARRAY)
+                .filter(available::contains)
+                .filter(slot -> {
+                    // Only filter by time if the selected date is today
+                    if (isTodayFinal) {
+                        String[] parts = slot.split(" - ");
+                        LocalTime end = LocalTime.parse(parts[1]);
+                        return end.isAfter(now); // Only keep ongoing or future slots for today
+                    } else {
+                        // For future dates, show all available slots
+                        return true;
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
 }

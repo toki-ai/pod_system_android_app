@@ -5,6 +5,13 @@
     android:id="@+id/home_nav"
     app:startDestination="@id/homeFragment">
 
+    <!-- Global action to paymentSuccessFragment -->
+    <action
+        android:id="@+id/action_global_to_paymentSuccessFragment"
+        app:destination="@id/paymentSuccessFragment"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="true" />
+
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.assignmentpod.ui.tab.home.HomeFragment"
@@ -17,7 +24,7 @@
             android:id="@+id/action_homeFragment_to_cartFragment"
             app:destination="@id/cartFragment" />
     </fragment>
-    
+
     <fragment
         android:id="@+id/roomTypeDetailFragment"
         android:name="com.example.assignmentpod.ui.tab.home.RoomTypeDetailFragment"
@@ -42,6 +49,9 @@
         <action
             android:id="@+id/action_roomTypeDetailFragment_to_cartFragment"
             app:destination="@id/cartFragment" />
+        <action
+            android:id="@+id/action_roomTypeDetailFragment_to_paymentFragment"
+            app:destination="@id/paymentFragment" />
     </fragment>
 
     <fragment
@@ -54,4 +64,105 @@
             app:destination="@id/roomTypeDetailFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.example.assignmentpod.ui.tab.home.PaymentFragment"
+        android:label="fragment_payment"
+        tools:layout="@layout/fragment_payment">
+        <argument
+            android:name="roomTypeAddress"
+            android:defaultValue="Unknown Address"
+            app:argType="string" />
+        <argument
+            android:name="roomTypeName"
+            android:defaultValue="Unknown Room Type"
+            app:argType="string" />
+        <argument
+            android:name="roomName"
+            android:defaultValue="Unknown Room"
+            app:argType="string" />
+        <argument
+            android:name="selectedDate"
+            android:defaultValue="Unknown Date"
+            app:argType="string"/>
+        <argument
+            android:name="selectedSlot"
+            android:defaultValue="Unknown Slot"
+            app:argType="string" />
+        <argument
+            android:name="selectedPackage"
+            android:defaultValue="Unknown Package"
+            app:argType="string" />
+        <argument
+            android:name="roomTypePrice"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="discountPercentage"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="totalPrice"
+            android:defaultValue="0"
+            app:argType="float" />
+        <argument
+            android:name="roomTypeId"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_paymentFragment_to_paymentSuccessFragment"
+            app:destination="@id/paymentSuccessFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentSuccessFragment"
+        android:name="com.example.assignmentpod.ui.tab.home.PaymentSuccessFragment"
+        android:label="fragment_payment_success"
+        tools:layout="@layout/fragment_payment_success">
+        <argument
+            android:name="orderId"
+            android:defaultValue="#ABCXYZ"
+            app:argType="string" />
+        <argument
+            android:name="customerName"
+            android:defaultValue="Phạm Thị Anh Đào"
+            app:argType="string" />
+        <argument
+            android:name="totalAmount"
+            android:defaultValue="1.374.000 VND"
+            app:argType="string" />
+        <argument
+            android:name="roomName"
+            android:defaultValue="Phòng POD đôi"
+            app:argType="string" />
+        <argument
+            android:name="roomPrice"
+            android:defaultValue="20.000 VND/tiếng"
+            app:argType="string" />
+        <argument
+            android:name="roomAddress"
+            android:defaultValue="Đỗm biết"
+            app:argType="string" />
+        <argument
+            android:name="bookedDate"
+            android:defaultValue="24/01/2024"
+            app:argType="string" />
+        <argument
+            android:name="bookedSlot"
+            android:defaultValue="7h-9h, 9h-11h"
+            app:argType="string" />
+        <argument
+            android:name="selectedRooms"
+            android:defaultValue="Phòng 101, Phòng 102"
+            app:argType="string" />
+        <argument
+            android:name="bookedPackage"
+            android:defaultValue="Gói tuần"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_paymentSuccessFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>
