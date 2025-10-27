@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.example.assignmentpod"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.assignmentpod"
         minSdk = 35
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -46,8 +46,10 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.12.0")
     implementation("com.squareup.retrofit2:retrofit:2.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.6.0")
+    implementation("commons-codec:commons-codec:1.14")
     implementation("com.airbnb.android:lottie:6.0.0")
-    
+
     // Navigation UI
     implementation("androidx.navigation:navigation-ui:2.7.5")
     
