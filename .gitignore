@@ -121,5 +121,6 @@ tmp/
 test-results/
 junit-reports/
 
-# External Lib
-/ZaloPayLib
+# API Keys and Secrets (DO NOT COMMIT)
+**/google-services.json
+secrets.properties
