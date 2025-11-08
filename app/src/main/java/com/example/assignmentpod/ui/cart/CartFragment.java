@@ -1,5 +1,6 @@
 package com.example.assignmentpod.ui.cart;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -161,7 +162,18 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     
     @Override
     public void onDeleteClick(CartItem cartItem) {
-        cartViewModel.removeFromCart(cartItem);
-        Toast.makeText(getContext(), "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
+        // Show confirmation dialog before deleting
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa \"" + cartItem.getRoomName() + "\" khỏi giỏ hàng?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    cartViewModel.removeFromCart(cartItem);
+                    Toast.makeText(getContext(), "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 }
