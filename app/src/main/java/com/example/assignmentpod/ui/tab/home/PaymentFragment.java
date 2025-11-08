@@ -140,6 +140,32 @@ public class PaymentFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // Check if user returned from payment and handle success
+        checkPaymentStatus();
+    }
+
+    /**
+     * Check payment status when user returns to the app
+     * This handles the case where user completes payment in browser and returns
+     */
+    private void checkPaymentStatus() {
+        // Check SharedPreferences for payment completion flag
+        SharedPreferences prefs = requireContext().getSharedPreferences("PaymentData", Context.MODE_PRIVATE);
+        boolean paymentCompleted = prefs.getBoolean("paymentCompleted", false);
+        
+        if (paymentCompleted) {
+            // Clear the flag
+            prefs.edit().putBoolean("paymentCompleted", false).apply();
+            
+            // Navigate to success page
+            Toast.makeText(getContext(), "Thanh toán đã hoàn tất!", Toast.LENGTH_SHORT).show();
+            navigateToPaymentSuccess();
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_payment, container, false);
@@ -305,8 +331,40 @@ public class PaymentFragment extends Fragment {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
             startActivity(browserIntent);
+            
+            // For demo purposes, simulate successful payment after a short delay
+            // In a real app, you would handle payment completion through callbacks or deep links
+            simulatePaymentCompletion();
+            
         } catch (Exception e) {
             Toast.makeText(getContext(), "Lỗi mở trang thanh toán: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Simulate payment completion for demo purposes
+     * In a real app, this would be handled through payment gateway callbacks
+     */
+    private void simulatePaymentCompletion() {
+        // Show a toast with instructions for the user
+        Toast.makeText(getContext(), 
+            "Đã mở trang thanh toán. Sau khi thanh toán xong, quay lại ứng dụng để xem kết quả.", 
+            Toast.LENGTH_LONG).show();
+        
+        // Set a flag that payment was initiated
+        SharedPreferences prefs = requireContext().getSharedPreferences("PaymentData", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("paymentInitiated", true).apply();
+        
+        // For demo purposes, also simulate automatic completion after delay
+        if (getView() != null) {
+            getView().postDelayed(() -> {
+                if (getContext() != null) {
+                    // Simulate successful payment
+                    prefs.edit().putBoolean("paymentCompleted", true).apply();
+                    Toast.makeText(getContext(), "Mô phỏng: Thanh toán thành công!", Toast.LENGTH_SHORT).show();
+                    navigateToPaymentSuccess();
+                }
+            }, 3000); // 3 second delay to simulate payment processing
         }
     }
 

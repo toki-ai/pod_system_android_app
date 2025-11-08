@@ -34,19 +34,41 @@ public class PaymentSuccessFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Get data from arguments
+        // Get data from arguments or SharedPreferences
         Bundle args = getArguments();
         if (args != null) {
-            orderId = args.getString("orderId", "#ABCXYZ");
-            customerName = args.getString("customerName", "Phạm Thị Anh Đào");
-            totalAmount = args.getString("totalAmount", "1.374.000 VND");
-            roomName = args.getString("roomName", "Phòng POD đôi");
-            roomPrice = args.getString("roomPrice", "20.000 VND/tiếng");
-            roomAddress = args.getString("roomAddress", "Đỗm biết");
-            bookedDate = args.getString("bookedDate", "24/01/2024");
-            bookedSlot = args.getString("bookedSlot", "7h-9h, 9h-11h");
-            selectedRooms = args.getString("selectedRooms", "Phòng 101, Phòng 102");
-            bookedPackage = args.getString("bookedPackage", "Gói tuần");
+            orderId = args.getString("orderId", "#" + System.currentTimeMillis());
+            customerName = args.getString("customerName", "Khách hàng");
+            totalAmount = args.getString("totalAmount", "0 VND");
+            roomName = args.getString("roomName", "Phòng POD");
+            roomPrice = args.getString("roomPrice", "0 VND/tiếng");
+            roomAddress = args.getString("roomAddress", "Địa chỉ không xác định");
+            bookedDate = args.getString("bookedDate", "Chưa xác định");
+            bookedSlot = args.getString("bookedSlot", "Chưa xác định");
+            selectedRooms = args.getString("selectedRooms", "Chưa xác định");
+            bookedPackage = args.getString("bookedPackage", "Gói cơ bản");
+        } else {
+            // Fallback to SharedPreferences if no arguments provided
+            loadDataFromSharedPreferences();
+        }
+    }
+
+    /**
+     * Load payment data from SharedPreferences as fallback
+     */
+    private void loadDataFromSharedPreferences() {
+        if (getContext() != null) {
+            android.content.SharedPreferences prefs = getContext().getSharedPreferences("PaymentData", android.content.Context.MODE_PRIVATE);
+            orderId = prefs.getString("orderId", "#" + System.currentTimeMillis());
+            customerName = prefs.getString("customerName", "Khách hàng");
+            totalAmount = prefs.getString("totalAmount", "0 VND");
+            roomName = prefs.getString("roomName", "Phòng POD");
+            roomPrice = prefs.getString("roomPrice", "0 VND/tiếng");
+            roomAddress = prefs.getString("roomAddress", "Địa chỉ không xác định");
+            bookedDate = prefs.getString("bookedDate", "Chưa xác định");
+            bookedSlot = prefs.getString("bookedSlot", "Chưa xác định");
+            selectedRooms = prefs.getString("selectedRooms", "Chưa xác định");
+            bookedPackage = prefs.getString("bookedPackage", "Gói cơ bản");
         }
     }
 
