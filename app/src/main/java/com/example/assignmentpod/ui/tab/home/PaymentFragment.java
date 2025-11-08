@@ -68,6 +68,9 @@ public class PaymentFragment extends Fragment {
     // Additional order data received from RoomTypeDetailFragment
     private int roomTypeId;
     private int buildingId;
+    private int servicePackageId;
+    private String servicePackageName;
+    private int servicePackageDiscountPercentage;
 
     public PaymentFragment() {
     }
@@ -98,6 +101,11 @@ public class PaymentFragment extends Fragment {
             totalPrice = args.getFloat("totalPrice", 0.0f);
             roomTypeId = args.getInt("roomTypeId", 0);
             buildingId = args.getInt("buildingId", 0);
+            
+            // Extract complete ServicePackage data
+            servicePackageId = args.getInt("servicePackageId", 0);
+            servicePackageName = args.getString("servicePackageName", "Unknown Package");
+            servicePackageDiscountPercentage = args.getInt("servicePackageDiscountPercentage", 0);
         }
     }
 
@@ -289,12 +297,11 @@ public class PaymentFragment extends Fragment {
         // Create order in backend first before proceeding to payment
         createOrderAPI();
         
-        // TODO: Uncomment when you want to integrate with ZaloPay/MoMo payment
-        // if (selectedPaymentMethod.equals("ZaloPay")) {
-        //     paymentViewModel.createZaloPayOrder(requireContext(), amount);
-        // } else if (selectedPaymentMethod.equals("MoMo")) {
-        //     paymentViewModel.createMoMoOrder(requireContext(), amount);
-        // }
+         if (selectedPaymentMethod.equals("ZaloPay")) {
+             paymentViewModel.createZaloPayOrder(requireContext(), amount);
+         } else if (selectedPaymentMethod.equals("MoMo")) {
+             paymentViewModel.createMoMoOrder(requireContext(), amount);
+         }
     }
 
     private void openPaymentUrl(String paymentUrl) {
@@ -418,6 +425,7 @@ public class PaymentFragment extends Fragment {
         // Create Building object with actual building ID from RoomTypeDetailFragment
         Building building = new Building();
         building.setId(buildingId);
+        building.setStatus("Active"); // Set status to Active to match database schema
         building.setAddress(roomTypeAddress);
         
         // Create Room DTO with null amenities
@@ -431,10 +439,11 @@ public class PaymentFragment extends Fragment {
         List<RoomWithAmenitiesDTO> selectedRooms = new ArrayList<>();
         selectedRooms.add(roomDTO);
         
-        // Create ServicePackage object
+        // Create ServicePackage object with complete data including ID
         ServicePackage servicePackage = new ServicePackage();
-        servicePackage.setName(bookedPackage);
-        servicePackage.setDiscountPercentage(discountPercentage);
+        servicePackage.setId(servicePackageId);
+        servicePackage.setName(servicePackageName);
+        servicePackage.setDiscountPercentage(servicePackageDiscountPercentage);
         
         // Create Account object from current user
         Account customer = new Account();
