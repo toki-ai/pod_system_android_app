@@ -436,11 +436,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             clearFilters();
             Toast.makeText(getContext(), "All filters cleared", Toast.LENGTH_SHORT).show();
         }
-        if (item.getItemId() == R.id.nav_cart) {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_homeFragment_to_cartFragment);
-            return true;
-        }
+        
 
         Toast.makeText(getContext(), "Bộ lọc demo - " + item.getTitle(), Toast.LENGTH_SHORT).show();
         
