@@ -67,6 +67,7 @@ public class PaymentFragment extends Fragment {
     
     // Additional order data received from RoomTypeDetailFragment
     private int roomTypeId;
+    private int buildingId;
 
     public PaymentFragment() {
     }
@@ -96,6 +97,7 @@ public class PaymentFragment extends Fragment {
             discountPercentage = args.getInt("discountPercentage", 0);
             totalPrice = args.getFloat("totalPrice", 0.0f);
             roomTypeId = args.getInt("roomTypeId", 0);
+            buildingId = args.getInt("buildingId", 0);
         }
     }
 
@@ -413,9 +415,9 @@ public class PaymentFragment extends Fragment {
             }
         }
         
-        // Create Building object (you may need to fetch this from API or pass it)
+        // Create Building object with actual building ID from RoomTypeDetailFragment
         Building building = new Building();
-        building.setId(1); // TODO: Get actual building ID
+        building.setId(buildingId);
         building.setAddress(roomTypeAddress);
         
         // Create Room DTO with null amenities

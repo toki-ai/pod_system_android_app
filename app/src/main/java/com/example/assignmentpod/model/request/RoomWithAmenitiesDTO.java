@@ -1,9 +1,6 @@
 package com.example.assignmentpod.model.request;
 
-import com.example.assignmentpod.model.amenity.Amenity;
 import com.google.gson.annotations.SerializedName;
-
-import java.util.List;
 
 public class RoomWithAmenitiesDTO {
     
@@ -20,25 +17,19 @@ public class RoomWithAmenitiesDTO {
     private String image;
     
     @SerializedName("amenities")
-    private List<Amenity> amenities; // Will be null by default
+    private Object amenities; // Always null, using Object to avoid import dependencies
 
     // Constructors
-    public RoomWithAmenitiesDTO() {}
+    public RoomWithAmenitiesDTO() {
+        this.amenities = null; // Always null
+    }
 
     public RoomWithAmenitiesDTO(Integer id, String name, double price, String image) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.image = image;
-        this.amenities = null; // Default to null
-    }
-
-    public RoomWithAmenitiesDTO(Integer id, String name, double price, String image, List<Amenity> amenities) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.image = image;
-        this.amenities = amenities;
+        this.amenities = null; // Always null
     }
 
     // Getters and Setters
@@ -74,12 +65,12 @@ public class RoomWithAmenitiesDTO {
         this.image = image;
     }
 
-    public List<Amenity> getAmenities() {
+    public Object getAmenities() {
         return amenities;
     }
 
-    public void setAmenities(List<Amenity> amenities) {
-        this.amenities = amenities;
+    public void setAmenities(Object amenities) {
+        this.amenities = null; // Always set to null regardless of input
     }
 }
 
