@@ -28,6 +28,11 @@ public class Order {
     @SerializedName("orderDetails")
     private List<OrderDetail> orderDetails;
 
+    // Display fields for UI (not from API)
+    private String displayTitle;
+    private String displaySubtitle;
+    private String displayImage;
+
     // Constructors
     public Order() {}
 
@@ -107,5 +112,39 @@ public class Order {
 
     public void setOrderDetails(List<OrderDetail> orderDetails) {
         this.orderDetails = orderDetails;
+    }
+
+    // Convenience method for getId() - returns orderId
+    public String getId() {
+        return orderId;
+    }
+
+    public void setId(String id) {
+        this.orderId = id;
+    }
+
+    // Display field getters and setters
+    public String getDisplayTitle() {
+        return displayTitle;
+    }
+
+    public void setDisplayTitle(String displayTitle) {
+        this.displayTitle = displayTitle;
+    }
+
+    public String getDisplaySubtitle() {
+        return displaySubtitle;
+    }
+
+    public void setDisplaySubtitle(String displaySubtitle) {
+        this.displaySubtitle = displaySubtitle;
+    }
+
+    public String getDisplayImage() {
+        return displayImage;
+    }
+
+    public void setDisplayImage(String displayImage) {
+        this.displayImage = displayImage;
     }
 }

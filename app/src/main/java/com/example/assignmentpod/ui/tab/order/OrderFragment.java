@@ -23,16 +23,14 @@ import com.example.assignmentpod.data.repository.OrderRepository;
 import com.example.assignmentpod.model.order.Order;
 import com.example.assignmentpod.model.response.PaginationResponse;
 import com.example.assignmentpod.ui.adapter.OrderAdapter;
-import com.example.assignmentpod.utils.DateTimeFormatterUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class OrderFragment extends Fragment implements OrderAdapter.OrderActionListener {
     private static final String TAG = "OrderFragment";
-
+    private static final int PAGE_SIZE = 5;
     // UI Components
     private RecyclerView recyclerViewOrders;
     private ProgressBar progressLoading;
@@ -46,16 +44,13 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
     private Spinner spinnerStatusFilter;
     private Spinner spinnerSortBy;
     private Button btnClearFilters;
-
     // Data & State
     private OrderRepository orderRepository;
     private TokenManager tokenManager;
     private OrderAdapter orderAdapter;
     private List<Order> orders = new ArrayList<>();
-
     // Pagination state
     private int currentPage = 0;
-    private static final int PAGE_SIZE = 5;
     private int totalPages = 1;
     private int totalRecords = 0;
     private boolean isLoading = false;
@@ -65,7 +60,8 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
     private String selectedStatus = "Successfully";
     private String selectedSortBy = "newest";
 
-    public OrderFragment() {}
+    public OrderFragment() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -128,9 +124,9 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                LinearLayoutManager layoutManager = 
+                LinearLayoutManager layoutManager =
                         (LinearLayoutManager) recyclerView.getLayoutManager();
-                
+
                 if (layoutManager != null) {
                     int visibleItemCount = layoutManager.getChildCount();
                     int totalItemCount = layoutManager.getItemCount();
@@ -148,21 +144,33 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
     }
 
     private void setupFiltersAndSort() {
-        // Status filter
-        String[] statuses = {"Successfully", "Pending", "Confirmed", "Cancelled"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(requireContext(), 
-                android.R.layout.simple_spinner_dropdown_item, statuses);
+        // Status filter - Updated to match API response
+        String[] statuses = {"Successfully", "Pending", "Rejected"};
+        String[] statusDisplayNames = {"Completed", "Pending", "Rejected"};
+        
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<String>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, statusDisplayNames) {
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                // Add some styling here if needed
+                return view;
+            }
+        };
+        
         spinnerStatusFilter.setAdapter(statusAdapter);
         spinnerStatusFilter.setSelection(0);
         spinnerStatusFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                selectedStatus = statuses[position];
+                selectedStatus = statuses[position]; // Use actual API value
+                Log.d(TAG, "Status filter changed to: " + selectedStatus);
                 resetAndReload();
             }
 
             @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
         });
 
         // Sort by
@@ -173,13 +181,14 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
         spinnerSortBy.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                selectedSortBy = position == 0 ? "newest" : position == 1 ? "oldest" : 
-                                position == 2 ? "highest_amount" : "lowest_amount";
+                selectedSortBy = position == 0 ? "newest" : position == 1 ? "oldest" :
+                        position == 2 ? "highest_amount" : "lowest_amount";
                 sortOrders();
             }
 
             @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
         });
 
         // Clear filters button
@@ -228,23 +237,31 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
                             orders.clear();
                         }
 
-                        orders.addAll(newOrders);
+                        // Process and enhance order data for better display
+                        List<Order> processedOrders = processOrdersForDisplay(newOrders);
+                        orders.addAll(processedOrders);
                         hasMorePages = (currentPage + 1) < totalPages;
 
                         sortOrders();
                         updateUI();
                         hideLoading();
                         isLoading = false;
+                        
+                        Log.d(TAG, "Successfully loaded " + processedOrders.size() + " orders");
                     }
 
                     @Override
                     public void onError(String error) {
+                        Log.e(TAG, "Error loading orders: " + error);
+                        
                         if (currentPage == 0) {
-                            showError(error);
+                            showError("Unable to load orders: " + error);
                         } else {
                             // Hide load more indicator on error
                             hideLoadMore();
-                            Toast.makeText(requireContext(), "Error loading more: " + error, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), 
+                                "Error loading more orders: " + error, 
+                                Toast.LENGTH_SHORT).show();
                         }
                         hideLoading();
                         isLoading = false;
@@ -275,10 +292,13 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
                         List<Order> newOrders = response.getData() != null ? response.getData() : new ArrayList<>();
 
                         if (!newOrders.isEmpty()) {
+                            // Process new orders for display
+                            List<Order> processedOrders = processOrdersForDisplay(newOrders);
+                            
                             int insertPosition = orders.size();
-                            orders.addAll(newOrders);
-                            orderAdapter.notifyItemRangeInserted(insertPosition, newOrders.size());
-                            Log.d(TAG, "Loaded " + newOrders.size() + " more orders");
+                            orders.addAll(processedOrders);
+                            orderAdapter.notifyItemRangeInserted(insertPosition, processedOrders.size());
+                            Log.d(TAG, "Loaded " + processedOrders.size() + " more orders");
                         }
 
                         totalPages = response.getTotalPage();
@@ -307,20 +327,20 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
 
         switch (selectedSortBy) {
             case "newest":
-                Collections.sort(orders, (o1, o2) -> 
+                Collections.sort(orders, (o1, o2) ->
                         o2.getCreatedAt().compareTo(o1.getCreatedAt()));
                 break;
             case "oldest":
-                Collections.sort(orders, (o1, o2) -> 
+                Collections.sort(orders, (o1, o2) ->
                         o1.getCreatedAt().compareTo(o2.getCreatedAt()));
                 break;
             case "highest_amount":
-                Collections.sort(orders, (o1, o2) -> 
+                Collections.sort(orders, (o1, o2) ->
                         Double.compare(o2.getFinalAmount() > 0 ? o2.getFinalAmount() : o2.getTotalAmount(),
                                 o1.getFinalAmount() > 0 ? o1.getFinalAmount() : o1.getTotalAmount()));
                 break;
             case "lowest_amount":
-                Collections.sort(orders, (o1, o2) -> 
+                Collections.sort(orders, (o1, o2) ->
                         Double.compare(o1.getFinalAmount() > 0 ? o1.getFinalAmount() : o1.getTotalAmount(),
                                 o2.getFinalAmount() > 0 ? o2.getFinalAmount() : o2.getTotalAmount()));
                 break;
@@ -331,13 +351,82 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
         }
     }
 
+    /**
+     * Process orders for better display by calculating totals and formatting data
+     */
+    private List<Order> processOrdersForDisplay(List<Order> rawOrders) {
+        List<Order> processedOrders = new ArrayList<>();
+        
+        for (Order order : rawOrders) {
+            try {
+                // Calculate total amount from order details
+                double totalAmount = 0.0;
+                int totalItems = 0;
+                String firstRoomName = "";
+                String firstRoomImage = "";
+                String buildingAddress = "";
+                
+                if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+                    totalItems = order.getOrderDetails().size();
+                    
+                    for (int i = 0; i < order.getOrderDetails().size(); i++) {
+                        var detail = order.getOrderDetails().get(i);
+                        
+                        // Calculate price with discount
+                        double roomPrice = detail.getRoomPrice();
+                        double discountPercentage = detail.getServicePackage() != null ? 
+                            detail.getServicePackage().getDiscountPercentage() : 0.0;
+                        double discountedPrice = roomPrice * (1 - discountPercentage / 100.0);
+                        totalAmount += discountedPrice;
+                        
+                        // Get first room details for display
+                        if (i == 0) {
+                            firstRoomName = detail.getRoomName() != null ? detail.getRoomName() : "Unknown Room";
+                            firstRoomImage = detail.getRoomImage() != null ? detail.getRoomImage() : "";
+                            buildingAddress = detail.getBuildingAddress() != null ? detail.getBuildingAddress() : "Unknown Address";
+                        }
+                    }
+                }
+                
+                // Set calculated values
+                order.setTotalAmount(totalAmount);
+                order.setFinalAmount(totalAmount);
+                
+                // Set display information
+                if (totalItems > 1) {
+                    order.setDisplayTitle(firstRoomName + " + " + (totalItems - 1) + " more");
+                } else {
+                    order.setDisplayTitle(firstRoomName);
+                }
+                
+                order.setDisplaySubtitle(buildingAddress);
+                order.setDisplayImage(firstRoomImage);
+                
+                processedOrders.add(order);
+                
+                Log.d(TAG, "Processed order " + order.getId() + 
+                    " with " + totalItems + " items, total: " + totalAmount);
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error processing order " + order.getId() + ": " + e.getMessage());
+                // Add order anyway with default values
+                processedOrders.add(order);
+            }
+        }
+        
+        return processedOrders;
+    }
+
     private void updateUI() {
-        tvTotalOrders.setText(totalRecords + " Orders");
+        // Update total count with better formatting
+        String orderText = totalRecords == 1 ? "Order" : "Orders";
+        tvTotalOrders.setText(totalRecords + " " + orderText);
 
         if (orders.isEmpty()) {
             showEmptyState();
         } else {
             showOrdersList();
+            Log.d(TAG, "Displaying " + orders.size() + " orders in UI");
         }
     }
 
@@ -387,25 +476,53 @@ public class OrderFragment extends Fragment implements OrderAdapter.OrderActionL
 
     @Override
     public void onViewInvoice(Order order, int position) {
-        Toast.makeText(requireContext(), "View Invoice: " + order.getOrderId(), Toast.LENGTH_SHORT).show();
-        // TODO: Implement invoice view (modal or PDF download)
+        Log.d(TAG, "View invoice for order: " + order.getId());
+        
+        // Show order details in a more informative way
+        StringBuilder details = new StringBuilder();
+        details.append("Order ID: ").append(order.getId()).append("\n");
+        details.append("Date: ").append(order.getCreatedAt()).append("\n");
+        details.append("Total: ").append(String.format("%.0f VND", order.getTotalAmount())).append("\n");
+        
+        if (order.getOrderDetails() != null) {
+            details.append("Items: ").append(order.getOrderDetails().size()).append(" room(s)");
+        }
+        
+        Toast.makeText(requireContext(), details.toString(), Toast.LENGTH_LONG).show();
+        // TODO: Implement proper invoice view (modal or PDF download)
     }
 
     @Override
     public void onReorder(Order order, int position) {
-        Toast.makeText(requireContext(), "Reorder: " + order.getOrderId(), Toast.LENGTH_SHORT).show();
-        // TODO: Implement reorder functionality
+        Log.d(TAG, "Reorder requested for: " + order.getId());
+        
+        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            String roomInfo = order.getOrderDetails().get(0).getRoomName();
+            Toast.makeText(requireContext(), 
+                "Reordering " + roomInfo + "...\nThis will navigate to booking page", 
+                Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(requireContext(), "Reorder: " + order.getId(), Toast.LENGTH_SHORT).show();
+        }
+        // TODO: Navigate to booking page with pre-filled data
     }
 
     @Override
     public void onSupport(Order order, int position) {
-        Toast.makeText(requireContext(), "Support: " + order.getOrderId(), Toast.LENGTH_SHORT).show();
-        // TODO: Implement support contact functionality
+        Log.d(TAG, "Support requested for order: " + order.getId());
+        
+        Toast.makeText(requireContext(), 
+            "Opening support for order " + order.getId() + "\nThis will open chat or contact form", 
+            Toast.LENGTH_LONG).show();
+        // TODO: Navigate to support/chat screen with order context
     }
 
     @Override
     public void onBrowseRooms() {
-        Toast.makeText(requireContext(), "Browse Rooms", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to rooms browsing screen
+        Log.d(TAG, "Browse rooms requested");
+        Toast.makeText(requireContext(), 
+            "Navigating to room browser...", 
+            Toast.LENGTH_SHORT).show();
+        // TODO: Navigate to rooms browsing screen (Home tab)
     }
 }

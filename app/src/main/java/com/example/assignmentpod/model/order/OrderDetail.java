@@ -1,5 +1,6 @@
 package com.example.assignmentpod.model.order;
 
+import com.example.assignmentpod.model.servicepackage.ServicePackage;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
@@ -350,5 +351,20 @@ public class OrderDetail {
 
     public void setCancelReason(String cancelReason) {
         this.cancelReason = cancelReason;
+    }
+
+    /**
+     * Convenience method to get ServicePackage object from primitive fields
+     * This creates a ServicePackage object on-the-fly from the existing data
+     */
+    public ServicePackage getServicePackage() {
+        if (servicePackageId == 0 && servicePackageName == null) {
+            return null; // No service package data available
+        }
+        ServicePackage pkg = new ServicePackage();
+        pkg.setId(servicePackageId);
+        pkg.setName(servicePackageName);
+        pkg.setDiscountPercentage((int) discountPercentage);
+        return pkg;
     }
 }
