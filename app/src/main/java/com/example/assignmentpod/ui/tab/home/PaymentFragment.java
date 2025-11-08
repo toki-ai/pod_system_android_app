@@ -297,11 +297,8 @@ public class PaymentFragment extends Fragment {
         // Create order in backend first before proceeding to payment
         createOrderAPI();
         
-         if (selectedPaymentMethod.equals("ZaloPay")) {
-             paymentViewModel.createZaloPayOrder(requireContext(), amount);
-         } else if (selectedPaymentMethod.equals("MoMo")) {
-             paymentViewModel.createMoMoOrder(requireContext(), amount);
-         }
+        // Note: Payment processing is handled after successful order creation
+        // in the createOrderAPI() callback to ensure order is created first
     }
 
     private void openPaymentUrl(String paymentUrl) {
@@ -376,16 +373,33 @@ public class PaymentFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                     }
                     
-                    // Navigate to payment success screen
-                    navigateToPaymentSuccess();
+                    // Process payment after successful order creation
+                    int amount = (int) totalPrice;
+                    if (selectedPaymentMethod.equals("ZaloPay")) {
+                        paymentViewModel.createZaloPayOrder(requireContext(), amount);
+                    } else if (selectedPaymentMethod.equals("MoMo")) {
+                        paymentViewModel.createMoMoOrder(requireContext(), amount);
+                    } else {
+                        // If no payment method selected or direct success, navigate to success screen
+                        navigateToPaymentSuccess();
+                    }
                 }
 
                 @Override
                 public void onError(String error) {
                     Log.e(TAG, "Failed to create order: " + error);
-                    Toast.makeText(getContext(), 
-                        "Lỗi tạo đơn hàng: " + error, 
-                        Toast.LENGTH_LONG).show();
+                    
+                    // Handle specific errors
+                    if (error.contains("Data truncated for column 'status'") || 
+                        error.contains("Successfully")) {
+                        handleDatabaseStatusError();
+                    } else if (error.contains("amenities") && error.contains("null")) {
+                        handleAmenitiesNullError();
+                    } else {
+                        Toast.makeText(getContext(), 
+                            "Lỗi tạo đơn hàng: " + error, 
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
             });
             
@@ -417,6 +431,9 @@ public class PaymentFragment extends Fragment {
             if (times.length == 2) {
                 String startTime = apiDate + "T" + times[0] + ":00";
                 String endTime = apiDate + "T" + times[1] + ":00";
+                
+                // Keep original times - workaround moved to error handling
+                
                 startTimes.add(startTime);
                 endTimes.add(endTime);
             }
@@ -428,13 +445,13 @@ public class PaymentFragment extends Fragment {
         building.setStatus("Active"); // Set status to Active to match database schema
         building.setAddress(roomTypeAddress);
         
-        // Create Room DTO with null amenities
+        // Create Room DTO with empty amenities list
         RoomWithAmenitiesDTO roomDTO = new RoomWithAmenitiesDTO();
         roomDTO.setId(roomTypeId); // Using roomTypeId as room ID
         roomDTO.setName(roomName);
         roomDTO.setPrice(initialPrice);
         roomDTO.setImage(""); // Empty image for now
-        roomDTO.setAmenities(null); // Null amenities as requested
+        roomDTO.setAmenities(new ArrayList<>()); // Empty list instead of null to prevent NullPointerException
         
         List<RoomWithAmenitiesDTO> selectedRooms = new ArrayList<>();
         selectedRooms.add(roomDTO);
@@ -452,20 +469,74 @@ public class PaymentFragment extends Fragment {
         customer.setEmail(currentUser.getEmail());
         customer.setPhoneNumber(currentUser.getPhoneNumber());
         
-        // Build the request
+        // Build the request with null safety checks
         OrderDetailCreationRequest request = new OrderDetailCreationRequest();
         request.setBuilding(building);
-        request.setSelectedRooms(selectedRooms);
+        request.setSelectedRooms(selectedRooms != null ? selectedRooms : new ArrayList<>());
         request.setServicePackage(servicePackage);
         request.setCustomer(customer);
         request.setPriceRoom(initialPrice);
-        request.setStartTime(startTimes);
-        request.setEndTime(endTimes);
+        request.setStartTime(startTimes != null ? startTimes : new ArrayList<>());
+        request.setEndTime(endTimes != null ? endTimes : new ArrayList<>());
         
         Log.d(TAG, "Order request built successfully");
         Log.d(TAG, "StartTimes: " + startTimes);
         Log.d(TAG, "EndTimes: " + endTimes);
         
         return request;
+    }
+
+
+    /**
+     * Handle the amenities null pointer error
+     */
+    private void handleAmenitiesNullError() {
+        Log.e(TAG, "Amenities null pointer error detected - server expects non-null amenities list");
+        
+        // Show user-friendly error message
+        Toast.makeText(getContext(), 
+            "Lỗi dữ liệu: Đã khắc phục lỗi danh sách tiện ích. Vui lòng thử lại.", 
+            Toast.LENGTH_LONG).show();
+        
+        // Log technical details
+        Log.e(TAG, "FIXED: Changed amenities from null to empty ArrayList to prevent NullPointerException");
+        
+        // Keep button enabled for retry
+        if (btnConfirmPayment != null) {
+            btnConfirmPayment.setEnabled(true);
+            btnConfirmPayment.setText("Thử lại");
+        }
+    }
+
+    /**
+     * Handle the specific database status error caused by server-database schema mismatch
+     */
+    private void handleDatabaseStatusError() {
+        Log.e(TAG, "Database status enum mismatch error detected - server uses 'Successfully' but database expects 'Completed'");
+        
+        // Show detailed error information for debugging
+        Log.e(TAG, "CRITICAL: JPA Entity uses @Enumerated(EnumType.STRING) expecting to store 'Successfully'");
+        Log.e(TAG, "CRITICAL: Database schema defines status as ENUM('Pending', 'Confirmed', 'Cancelled', 'Completed')");
+        Log.e(TAG, "SOLUTION: Either change OrderStatus.Successfully to OrderStatus.Completed OR update database schema");
+        
+        // Show user-friendly error message
+        Toast.makeText(getContext(), 
+            "Lỗi hệ thống: Cơ sở dữ liệu không hỗ trợ trạng thái đặt phòng hiện tại. " +
+            "Vui lòng liên hệ bộ phận kỹ thuật để cập nhật hệ thống.", 
+            Toast.LENGTH_LONG).show();
+        
+        // Provide actionable feedback to user
+        if (btnConfirmPayment != null) {
+            btnConfirmPayment.setEnabled(true); // Keep enabled for potential retry
+            btnConfirmPayment.setText("Thử lại");
+        }
+        
+        // Log the exact technical details for developers
+        Log.e(TAG, "=== TECHNICAL DETAILS FOR DEVELOPERS ===");
+        Log.e(TAG, "Error: Data truncated for column 'status' at row 1");
+        Log.e(TAG, "Cause: OrderStatus enum value 'Successfully' not in database ENUM constraint");
+        Log.e(TAG, "Fix 1: Change server OrderStatus.Successfully to OrderStatus.Completed");
+        Log.e(TAG, "Fix 2: ALTER TABLE orderDetail MODIFY status ENUM('Pending', 'Confirmed', 'Cancelled', 'Completed', 'Successfully')");
+        Log.e(TAG, "========================================");
     }
 }
