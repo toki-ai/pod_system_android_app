@@ -18,6 +18,9 @@ public class ServicePackage {
         this.discountPercentage = discountPercentage;
     }
 
+    public ServicePackage() {
+    }
+
     public Integer getId() {
         return id;
     }

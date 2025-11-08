@@ -2,13 +2,17 @@ package com.example.assignmentpod.data.remote.api;
 
 import com.example.assignmentpod.model.order.Order;
 import com.example.assignmentpod.model.order.OrderDetail;
+import com.example.assignmentpod.model.request.OrderDetailCreationRequest;
 import com.example.assignmentpod.model.response.ApiResponse;
 import com.example.assignmentpod.model.response.PaginationResponse;
 
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -54,5 +58,17 @@ public interface OrderAPI {
             @Query("page") int page,
             @Query("take") int take,
             @Query("status") String status
+    );
+
+    /**
+     * Create a new order
+     * @param authorization Authorization header with Bearer token
+     * @param request Order creation request with all booking details
+     * @return API response with order status (Successfully or Pending)
+     */
+    @POST("order")
+    Call<ApiResponse<String>> createOrder(
+            @Header("Authorization") String authorization,
+            @Body OrderDetailCreationRequest request
     );
 }

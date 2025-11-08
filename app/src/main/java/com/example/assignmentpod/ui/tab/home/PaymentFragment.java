@@ -24,9 +24,22 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.repository.OrderRepository;
 import com.example.assignmentpod.data.repository.UserRepository;
+import com.example.assignmentpod.model.building.Building;
+import com.example.assignmentpod.model.request.OrderDetailCreationRequest;
+import com.example.assignmentpod.model.request.RoomWithAmenitiesDTO;
+import com.example.assignmentpod.model.response.ApiResponse;
+import com.example.assignmentpod.model.servicepackage.ServicePackage;
+import com.example.assignmentpod.model.user.Account;
 import com.example.assignmentpod.model.user.UserProfile;
 import com.example.assignmentpod.utils.Utils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class PaymentFragment extends Fragment {
 
@@ -49,7 +62,11 @@ public class PaymentFragment extends Fragment {
     // ViewModel and Repository
     private PaymentViewModel paymentViewModel;
     private UserRepository userRepository;
+    private OrderRepository orderRepository;
     private UserProfile currentUser;
+    
+    // Additional order data received from RoomTypeDetailFragment
+    private int roomTypeId;
 
     public PaymentFragment() {
     }
@@ -61,6 +78,7 @@ public class PaymentFragment extends Fragment {
         // Initialize ViewModel and Repository
         paymentViewModel = new ViewModelProvider(this).get(PaymentViewModel.class);
         userRepository = new UserRepository(requireContext());
+        orderRepository = new OrderRepository(requireContext());
 
         // Load user profile
         loadUserProfile();
@@ -77,6 +95,7 @@ public class PaymentFragment extends Fragment {
             initialPrice = args.getInt("roomTypePrice", 0);
             discountPercentage = args.getInt("discountPercentage", 0);
             totalPrice = args.getFloat("totalPrice", 0.0f);
+            roomTypeId = args.getInt("roomTypeId", 0);
         }
     }
 
@@ -265,11 +284,15 @@ public class PaymentFragment extends Fragment {
         editor.putString("bookedPackage", bookedPackage);
         editor.apply();
 
-        if (selectedPaymentMethod.equals("ZaloPay")) {
-            paymentViewModel.createZaloPayOrder(requireContext(), amount);
-        } else if (selectedPaymentMethod.equals("MoMo")) {
-            paymentViewModel.createMoMoOrder(requireContext(), amount);
-        }
+        // Create order in backend first before proceeding to payment
+        createOrderAPI();
+        
+        // TODO: Uncomment when you want to integrate with ZaloPay/MoMo payment
+        // if (selectedPaymentMethod.equals("ZaloPay")) {
+        //     paymentViewModel.createZaloPayOrder(requireContext(), amount);
+        // } else if (selectedPaymentMethod.equals("MoMo")) {
+        //     paymentViewModel.createMoMoOrder(requireContext(), amount);
+        // }
     }
 
     private void openPaymentUrl(String paymentUrl) {
@@ -307,5 +330,131 @@ public class PaymentFragment extends Fragment {
 
     private String generateOrderId() {
         return "#" + System.currentTimeMillis();
+    }
+
+    /**
+     * Create order via backend API after successful payment
+     */
+    private void createOrderAPI() {
+        Log.d(TAG, "Creating order via API...");
+
+        if (currentUser == null) {
+            Log.e(TAG, "Cannot create order: User profile not loaded");
+            Toast.makeText(getContext(), "Lỗi: Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Build the order request
+            OrderDetailCreationRequest request = buildOrderRequest();
+            
+            // Call the create order API
+            orderRepository.createOrder(request, new OrderRepository.CreateOrderCallback() {
+                @Override
+                public void onSuccess(ApiResponse<String> response) {
+                    Log.d(TAG, "Order created successfully");
+                    Log.d(TAG, "Status: " + response.getData());
+                    Log.d(TAG, "Message: " + response.getMessage());
+                    
+                    String status = response.getData();
+                    String message = response.getMessage();
+                    
+                    if ("Successfully".equals(status)) {
+                        Toast.makeText(getContext(), "Đặt phòng thành công!", Toast.LENGTH_LONG).show();
+                    } else if ("Pending".equals(status)) {
+                        Toast.makeText(getContext(), 
+                            "Đặt phòng thành công nhưng một số phòng đã được đặt: " + message, 
+                            Toast.LENGTH_LONG).show();
+                    }
+                    
+                    // Navigate to payment success screen
+                    navigateToPaymentSuccess();
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.e(TAG, "Failed to create order: " + error);
+                    Toast.makeText(getContext(), 
+                        "Lỗi tạo đơn hàng: " + error, 
+                        Toast.LENGTH_LONG).show();
+                }
+            });
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error building order request: " + e.getMessage(), e);
+            Toast.makeText(getContext(), "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Build OrderDetailCreationRequest from payment data
+     */
+    private OrderDetailCreationRequest buildOrderRequest() throws Exception {
+        // Parse date and slot to create startTime and endTime lists
+        List<String> startTimes = new ArrayList<>();
+        List<String> endTimes = new ArrayList<>();
+        
+        // Parse bookedDate (format: dd-MM-yyyy)
+        SimpleDateFormat displayFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date date = displayFormat.parse(bookedDate);
+        String apiDate = apiFormat.format(date);
+        
+        // Parse bookedSlot (format: "07:00 - 09:00" or multiple slots)
+        String[] slots = bookedSlot.split(",");
+        for (String slot : slots) {
+            slot = slot.trim();
+            String[] times = slot.split(" - ");
+            if (times.length == 2) {
+                String startTime = apiDate + "T" + times[0] + ":00";
+                String endTime = apiDate + "T" + times[1] + ":00";
+                startTimes.add(startTime);
+                endTimes.add(endTime);
+            }
+        }
+        
+        // Create Building object (you may need to fetch this from API or pass it)
+        Building building = new Building();
+        building.setId(1); // TODO: Get actual building ID
+        building.setAddress(roomTypeAddress);
+        
+        // Create Room DTO with null amenities
+        RoomWithAmenitiesDTO roomDTO = new RoomWithAmenitiesDTO();
+        roomDTO.setId(roomTypeId); // Using roomTypeId as room ID
+        roomDTO.setName(roomName);
+        roomDTO.setPrice(initialPrice);
+        roomDTO.setImage(""); // Empty image for now
+        roomDTO.setAmenities(null); // Null amenities as requested
+        
+        List<RoomWithAmenitiesDTO> selectedRooms = new ArrayList<>();
+        selectedRooms.add(roomDTO);
+        
+        // Create ServicePackage object
+        ServicePackage servicePackage = new ServicePackage();
+        servicePackage.setName(bookedPackage);
+        servicePackage.setDiscountPercentage(discountPercentage);
+        
+        // Create Account object from current user
+        Account customer = new Account();
+        customer.setId(currentUser.getId());
+        customer.setName(currentUser.getName());
+        customer.setEmail(currentUser.getEmail());
+        customer.setPhoneNumber(currentUser.getPhoneNumber());
+        
+        // Build the request
+        OrderDetailCreationRequest request = new OrderDetailCreationRequest();
+        request.setBuilding(building);
+        request.setSelectedRooms(selectedRooms);
+        request.setServicePackage(servicePackage);
+        request.setCustomer(customer);
+        request.setPriceRoom(initialPrice);
+        request.setStartTime(startTimes);
+        request.setEndTime(endTimes);
+        
+        Log.d(TAG, "Order request built successfully");
+        Log.d(TAG, "StartTimes: " + startTimes);
+        Log.d(TAG, "EndTimes: " + endTimes);
+        
+        return request;
     }
 }
