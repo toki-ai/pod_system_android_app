@@ -272,12 +272,23 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
     
     private void observeCartCount() {
+        if (tvCartBadge == null) {
+            Log.e(TAG, "tvCartBadge is null, cannot observe cart count");
+            return;
+        }
+        
         cartRepository.getCartItemCount().observe(getViewLifecycleOwner(), count -> {
+            if (tvCartBadge == null) {
+                return;
+            }
+            
             if (count != null && count > 0) {
                 tvCartBadge.setVisibility(View.VISIBLE);
                 tvCartBadge.setText(String.valueOf(count));
+                Log.d(TAG, "Cart badge updated: " + count);
             } else {
                 tvCartBadge.setVisibility(View.GONE);
+                Log.d(TAG, "Cart badge hidden: count is " + count);
             }
         });
     }

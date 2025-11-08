@@ -36,6 +36,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -224,7 +225,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(userLocation)
                 .title("Vị trí của bạn")
-                .snippet("Số 1 Lưu Hữu Phước, Đông Hoà, Dĩ An, Hồ Chí Minh");
+                .snippet("Số 1 Lưu Hữu Phước, Đông Hoà, Dĩ An, Hồ Chí Minh")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         
         googleMap.addMarker(markerOptions);
         Log.d(TAG, "Added user location marker");
