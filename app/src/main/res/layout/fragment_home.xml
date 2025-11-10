@@ -121,10 +121,17 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
+        style="@style/Widget.App.NavigationView"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/white"
+        android:background="@drawable/nav_drawer_background"
+        android:fitsSystemWindows="false"
+        android:elevation="0dp"
+        app:shapeAppearance="@null"
+        app:shapeAppearanceOverlay="@null"
+        app:insetForeground="@null"
+        app:elevation="0dp"
         app:headerLayout="@layout/nav_header_filter"
         app:menu="@menu/drawer_filter_menu" />
 

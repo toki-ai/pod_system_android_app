@@ -3,13 +3,6 @@
 
     <group android:checkableBehavior="none">
         <item
-            android:id="@+id/nav_cart"
-            android:title="Cart"
-            android:icon="@drawable/ic_cart" />
-    </group>
-
-    <group android:checkableBehavior="none">
-        <item
             android:id="@+id/nav_filter_title"
             android:title="Room Type Filters"
             android:enabled="false" />
@@ -19,26 +12,22 @@
         <item
             android:id="@+id/nav_filter_single"
             android:title="Single Pod"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_filter_double"
             android:title="Double Pod" 
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_filter_meeting"
             android:title="Meeting Room"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_filter_conference"
             android:title="Conference Room"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
     </group>
 
     <group android:checkableBehavior="none">
@@ -48,12 +37,11 @@
             android:enabled="false" />
     </group>
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="none">
         <item
             android:id="@+id/nav_price_all"
             android:title="All Prices"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_price_low"
@@ -78,12 +66,11 @@
             android:enabled="false" />
     </group>
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="none">
         <item
             android:id="@+id/nav_capacity_all"
             android:title="All Capacity"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_capacity_1"
@@ -97,7 +84,32 @@
         
         <item
             android:id="@+id/nav_capacity_3"
-            android:title="3+ People"
+            android:title="3 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_4"
+            android:title="4 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_5"
+            android:title="5 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_6"
+            android:title="6 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_7"
+            android:title="7 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_8"
+            android:title="8 People"
             android:checkable="true" />
     </group>
 

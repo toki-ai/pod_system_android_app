@@ -178,4 +178,65 @@ public class FilterHelper {
                                                    String address) {
         return filterRoomTypes(roomTypes, roomTypeName, minPrice, maxPrice, address, null);
     }
+    
+    /**
+     * Filter room types with multiple room type names support.
+     * 
+     * @param roomTypes List of room types to filter
+     * @param roomTypeNames Set of room type names to filter by (null or empty to ignore)
+     * @param minPrice Minimum price filter (null to ignore)
+     * @param maxPrice Maximum price filter (null to ignore)
+     * @param capacity Capacity filter (null to ignore)
+     * @return Filtered list of room types
+     */
+    public static List<RoomType> filterRoomTypes(List<RoomType> roomTypes,
+                                                   Set<String> roomTypeNames,
+                                                   Double minPrice,
+                                                   Double maxPrice,
+                                                   Integer capacity) {
+        List<RoomType> filteredList = new ArrayList<>();
+
+        for (RoomType roomType : roomTypes) {
+            if (roomType == null) {
+                continue;
+            }
+
+            // Check room type names filter (if not empty, must match one of the names)
+            if (roomTypeNames != null && !roomTypeNames.isEmpty()) {
+                if (roomType.getName() == null) {
+                    continue;
+                }
+                boolean matchesAnyName = false;
+                for (String name : roomTypeNames) {
+                    if (roomType.getName().equalsIgnoreCase(name)) {
+                        matchesAnyName = true;
+                        break;
+                    }
+                }
+                if (!matchesAnyName) {
+                    continue;
+                }
+            }
+
+            // Check price range filter
+            if (minPrice != null && roomType.getPrice() < minPrice) {
+                continue;
+            }
+            if (maxPrice != null && roomType.getPrice() > maxPrice) {
+                continue;
+            }
+
+            // Check capacity filter
+            if (capacity != null && capacity > 0) {
+                if (roomType.getCapacity() != capacity) {
+                    continue;
+                }
+            }
+
+            // If all filters passed, add to result
+            filteredList.add(roomType);
+        }
+
+        return filteredList;
+    }
 }

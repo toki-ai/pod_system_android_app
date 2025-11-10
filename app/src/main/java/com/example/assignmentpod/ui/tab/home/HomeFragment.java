@@ -2,6 +2,8 @@ package com.example.assignmentpod.ui.tab.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -63,10 +65,15 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private java.util.List<RoomType> allFetchedRoomTypes = new java.util.ArrayList<>();
 
     // Filter State
-    private String filterRoomTypeName = null;
+    private java.util.Set<String> filterRoomTypeNames = new java.util.HashSet<>(); // Changed to Set for multiple selection
     private Double filterMinPrice = null;
     private Double filterMaxPrice = null;
     private Integer filterCapacity = null;
+    
+    // Track checked menu items for visual state
+    private java.util.Set<Integer> checkedMenuItemIds = new java.util.HashSet<>();
+    private Integer checkedPriceItemId = null;  // Track single price filter
+    private Integer checkedCapacityItemId = null; // Track single capacity filter
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -220,13 +227,12 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
 
     private void applyFiltersAndUpdateUI() {
-        // Apply filters to all fetched room types
+        // Apply filters to all fetched room types using the new method that supports multiple room types
         java.util.List<RoomType> filteredRoomTypes = FilterHelper.filterRoomTypes(
                 allFetchedRoomTypes,
-                filterRoomTypeName,
+                filterRoomTypeNames,
                 filterMinPrice,
                 filterMaxPrice,
-                null,
                 filterCapacity
         );
 
@@ -243,6 +249,22 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         }
         
         Log.d(TAG, "Applied filters. Result: " + filteredRoomTypes.size() + " room types from " + allFetchedRoomTypes.size());
+    }
+    
+    /**
+     * Reset pagination state và reload dữ liệu từ đầu
+     * Gọi method này mỗi khi thay đổi filter để tránh bug pagination
+     */
+    private void resetPaginationAndReload() {
+        currentPage = 1;
+        hasMorePages = true;
+        isLoadingMore = false;
+        allFetchedRoomTypes.clear();
+        
+        // Reload data from server with new filter
+        viewModel.refreshData();
+        
+        Log.d(TAG, "Reset pagination state and reloading data");
     }
     
     private void setupClickListeners() {
@@ -376,81 +398,237 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        drawerLayout.closeDrawer(GravityCompat.START);
-
         int itemId = item.getItemId();
         
+        // Room Type Filters - manually toggle checked state for multiple selection
         if (itemId == R.id.nav_filter_single) {
-            filterRoomTypeName = "Single Pod";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Single Pod", Toast.LENGTH_SHORT).show();
+            toggleRoomTypeMenuItem(item, "Single Pod");
+            return false; // Return false to prevent NavigationView from handling checked state
         } else if (itemId == R.id.nav_filter_double) {
-            filterRoomTypeName = "Double Pod";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Double Pod", Toast.LENGTH_SHORT).show();
+            toggleRoomTypeMenuItem(item, "Double Pod");
+            return false;
         } else if (itemId == R.id.nav_filter_meeting) {
-            filterRoomTypeName = "Meeting Room";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Meeting Room", Toast.LENGTH_SHORT).show();
+            toggleRoomTypeMenuItem(item, "Meeting Room");
+            return false;
         } else if (itemId == R.id.nav_filter_conference) {
-            filterRoomTypeName = "Conference Room";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Conference Room", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.nav_price_all) {
-            filterMinPrice = null;
-            filterMaxPrice = null;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "All Prices", Toast.LENGTH_SHORT).show();
+            toggleRoomTypeMenuItem(item, "Conference Room");
+            return false;
+        } 
+        // Price Range Filters
+        else if (itemId == R.id.nav_price_all) {
+            toggleFilterMenuItem(item);
+            applyPriceFilter(null, null);
+            return false;
         } else if (itemId == R.id.nav_price_low) {
-            filterMinPrice = 0.0;
-            filterMaxPrice = 50000.0;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Under 50.000 VND", Toast.LENGTH_SHORT).show();
+            toggleFilterMenuItem(item);
+            applyPriceFilter(0.0, 50000.0);
+            return false;
         } else if (itemId == R.id.nav_price_medium) {
-            filterMinPrice = 50000.0;
-            filterMaxPrice = 100000.0;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "50.000 - 100.000 VND", Toast.LENGTH_SHORT).show();
+            toggleFilterMenuItem(item);
+            applyPriceFilter(50000.0, 100000.0);
+            return false;
         } else if (itemId == R.id.nav_price_high) {
-            filterMinPrice = 100000.0;
-            filterMaxPrice = null;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Above 100.000 VND", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.nav_capacity_all) {
-            filterCapacity = null;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "All Capacity", Toast.LENGTH_SHORT).show();
+            toggleFilterMenuItem(item);
+            applyPriceFilter(100000.0, null);
+            return false;
+        } 
+        // Capacity Filters
+        else if (itemId == R.id.nav_capacity_all) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(null);
+            return false;
         } else if (itemId == R.id.nav_capacity_1) {
-            filterCapacity = 1;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "1 Person", Toast.LENGTH_SHORT).show();
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(1);
+            return false;
         } else if (itemId == R.id.nav_capacity_2) {
-            filterCapacity = 2;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "2 People", Toast.LENGTH_SHORT).show();
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(2);
+            return false;
         } else if (itemId == R.id.nav_capacity_3) {
-            filterCapacity = 3;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "3+ People", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.nav_reset_filters) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(3);
+            return false;
+        } else if (itemId == R.id.nav_capacity_4) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(4);
+            return false;
+        } else if (itemId == R.id.nav_capacity_5) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(5);
+            return false;
+        } else if (itemId == R.id.nav_capacity_6) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(6);
+            return false;
+        } else if (itemId == R.id.nav_capacity_7) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(7);
+            return false;
+        } else if (itemId == R.id.nav_capacity_8) {
+            toggleFilterMenuItem(item);
+            applyCapacityFilter(8);
+            return false;
+        } 
+        // Reset Filters
+        else if (itemId == R.id.nav_reset_filters) {
             clearFilters();
-            Toast.makeText(getContext(), "All filters cleared", Toast.LENGTH_SHORT).show();
-        }
-        if (item.getItemId() == R.id.nav_cart) {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_homeFragment_to_cartFragment);
+            uncheckAllMenuItems();
+            drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         }
-
-        Toast.makeText(getContext(), "Bộ lọc demo - " + item.getTitle(), Toast.LENGTH_SHORT).show();
         
+        // Don't close drawer immediately for filter items so user can see selection
+        // It will auto-close after a short delay
         return true;
+    }
+    
+    /**
+     * Toggle room type name filter và reset pagination
+     */
+    private void applyRoomTypeFilter(String roomTypeName) {
+        // Toggle: if exists, remove it; if not, add it
+        if (filterRoomTypeNames.contains(roomTypeName)) {
+            filterRoomTypeNames.remove(roomTypeName);
+        } else {
+            filterRoomTypeNames.add(roomTypeName);
+        }
+        resetPaginationAndReload();
+    }
+    
+    /**
+     * Toggle room type menu item and track its checked state
+     */
+    private void toggleRoomTypeMenuItem(MenuItem item, String roomTypeName) {
+        int itemId = item.getItemId();
+        
+        // Toggle checked state in tracking set
+        if (checkedMenuItemIds.contains(itemId)) {
+            checkedMenuItemIds.remove(itemId);
+            item.setChecked(false);
+            Log.d(TAG, "Unchecked item: " + roomTypeName + ", tracking set size: " + checkedMenuItemIds.size());
+        } else {
+            checkedMenuItemIds.add(itemId);
+            item.setChecked(true);
+            Log.d(TAG, "Checked item: " + roomTypeName + ", tracking set size: " + checkedMenuItemIds.size());
+        }
+        
+        // Apply filter logic
+        applyRoomTypeFilter(roomTypeName);
+        
+        // Restore all checked states (workaround for NavigationView behavior)
+        restoreMenuItemStates();
+    }
+    
+    /**
+     * Toggle any filter menu item (Price/Capacity) and track its checked state
+     * Unlike room types, these are single-selection within their group
+     */
+    private void toggleFilterMenuItem(MenuItem item) {
+        int itemId = item.getItemId();
+        
+        // Determine if this is a price or capacity item
+        boolean isPriceItem = (itemId == R.id.nav_price_all || itemId == R.id.nav_price_low || 
+                               itemId == R.id.nav_price_medium || itemId == R.id.nav_price_high);
+        boolean isCapacityItem = (itemId == R.id.nav_capacity_all || itemId == R.id.nav_capacity_1 || 
+                                  itemId == R.id.nav_capacity_2 || itemId == R.id.nav_capacity_3 ||
+                                  itemId == R.id.nav_capacity_4 || itemId == R.id.nav_capacity_5 ||
+                                  itemId == R.id.nav_capacity_6 || itemId == R.id.nav_capacity_7 ||
+                                  itemId == R.id.nav_capacity_8);
+        
+        if (isPriceItem) {
+            // Uncheck previous price item
+            if (checkedPriceItemId != null && navigationView != null) {
+                MenuItem prevItem = navigationView.getMenu().findItem(checkedPriceItemId);
+                if (prevItem != null) {
+                    prevItem.setChecked(false);
+                }
+            }
+            // Check new price item
+            checkedPriceItemId = itemId;
+            item.setChecked(true);
+        } else if (isCapacityItem) {
+            // Uncheck previous capacity item
+            if (checkedCapacityItemId != null && navigationView != null) {
+                MenuItem prevItem = navigationView.getMenu().findItem(checkedCapacityItemId);
+                if (prevItem != null) {
+                    prevItem.setChecked(false);
+                }
+            }
+            // Check new capacity item
+            checkedCapacityItemId = itemId;
+            item.setChecked(true);
+        }
+        
+        Log.d(TAG, "Checked filter item: " + item.getTitle());
+        
+        // Restore all checked states (including room types)
+        restoreMenuItemStates();
+    }
+    
+    /**
+     * Restore checked state for all tracked menu items
+     */
+    private void restoreMenuItemStates() {
+        // Use Handler to delay restoration to avoid NavigationView overriding the state
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (navigationView != null) {
+                Log.d(TAG, "Restoring checked state for " + checkedMenuItemIds.size() + " items");
+                for (Integer itemId : checkedMenuItemIds) {
+                    MenuItem item = navigationView.getMenu().findItem(itemId);
+                    if (item != null) {
+                        item.setChecked(true);
+                        Log.d(TAG, "Restored checked state for item: " + item.getTitle());
+                    }
+                }
+            }
+        });
+    }
+    
+    /**
+     * Apply price range filter và reset pagination
+     */
+    private void applyPriceFilter(Double minPrice, Double maxPrice) {
+        filterMinPrice = minPrice;
+        filterMaxPrice = maxPrice;
+        resetPaginationAndReload();
+    }
+    
+    /**
+     * Apply capacity filter và reset pagination
+     */
+    private void applyCapacityFilter(Integer capacity) {
+        filterCapacity = capacity;
+        resetPaginationAndReload();
+    }
+    
+    /**
+     * Uncheck all menu items in navigation drawer
+     */
+    private void uncheckAllMenuItems() {
+        // Clear tracking set
+        checkedMenuItemIds.clear();
+        checkedPriceItemId = null;
+        checkedCapacityItemId = null;
+        
+        if (navigationView != null) {
+            for (int i = 0; i < navigationView.getMenu().size(); i++) {
+                MenuItem item = navigationView.getMenu().getItem(i);
+                if (item.hasSubMenu()) {
+                    for (int j = 0; j < item.getSubMenu().size(); j++) {
+                        item.getSubMenu().getItem(j).setChecked(false);
+                    }
+                } else {
+                    item.setChecked(false);
+                }
+            }
+        }
     }
 
     private void applyFilterByName(String filterName) {
         // This method is kept for backward compatibility but can be enhanced
         // Reset current filters
-        filterRoomTypeName = null;
+        filterRoomTypeNames.clear();
         filterMinPrice = null;
         filterMaxPrice = null;
         filterCapacity = null;
@@ -460,32 +638,30 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             // Check if it's a room type name
             java.util.List<String> roomTypeNames = FilterHelper.extractUniqueRoomNames(allFetchedRoomTypes);
             if (roomTypeNames.contains(filterName)) {
-                filterRoomTypeName = filterName;
+                filterRoomTypeNames.add(filterName);
             }
         }
 
-        // Reset pagination and apply filters
-        currentPage = 1;
-        hasMorePages = true;
-        applyFiltersAndUpdateUI();
+        // Reset pagination and reload
+        resetPaginationAndReload();
     }
 
     public void clearFilters() {
-        filterRoomTypeName = null;
+        filterRoomTypeNames.clear();
         filterMinPrice = null;
         filterMaxPrice = null;
         filterCapacity = null;
-        currentPage = 1;
-        hasMorePages = true;
-        applyFiltersAndUpdateUI();
+        
+        // Reset pagination and reload
+        resetPaginationAndReload();
     }
 
     public void applyFiltersByRange(double minPrice, double maxPrice) {
         filterMinPrice = minPrice;
         filterMaxPrice = maxPrice;
-        currentPage = 1;
-        hasMorePages = true;
-        applyFiltersAndUpdateUI();
+        
+        // Reset pagination and reload
+        resetPaginationAndReload();
     }
 
     @Override
