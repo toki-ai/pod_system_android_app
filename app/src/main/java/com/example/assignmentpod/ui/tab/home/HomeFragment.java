@@ -72,6 +72,8 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     
     // Track checked menu items for visual state
     private java.util.Set<Integer> checkedMenuItemIds = new java.util.HashSet<>();
+    private Integer checkedPriceItemId = null;  // Track single price filter
+    private Integer checkedCapacityItemId = null; // Track single capacity filter
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -414,33 +416,59 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         } 
         // Price Range Filters
         else if (itemId == R.id.nav_price_all) {
+            toggleFilterMenuItem(item);
             applyPriceFilter(null, null);
+            return false;
         } else if (itemId == R.id.nav_price_low) {
+            toggleFilterMenuItem(item);
             applyPriceFilter(0.0, 50000.0);
+            return false;
         } else if (itemId == R.id.nav_price_medium) {
+            toggleFilterMenuItem(item);
             applyPriceFilter(50000.0, 100000.0);
+            return false;
         } else if (itemId == R.id.nav_price_high) {
+            toggleFilterMenuItem(item);
             applyPriceFilter(100000.0, null);
+            return false;
         } 
         // Capacity Filters
         else if (itemId == R.id.nav_capacity_all) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(null);
+            return false;
         } else if (itemId == R.id.nav_capacity_1) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(1);
+            return false;
         } else if (itemId == R.id.nav_capacity_2) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(2);
+            return false;
         } else if (itemId == R.id.nav_capacity_3) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(3);
+            return false;
         } else if (itemId == R.id.nav_capacity_4) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(4);
+            return false;
         } else if (itemId == R.id.nav_capacity_5) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(5);
+            return false;
         } else if (itemId == R.id.nav_capacity_6) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(6);
+            return false;
         } else if (itemId == R.id.nav_capacity_7) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(7);
+            return false;
         } else if (itemId == R.id.nav_capacity_8) {
+            toggleFilterMenuItem(item);
             applyCapacityFilter(8);
+            return false;
         } 
         // Reset Filters
         else if (itemId == R.id.nav_reset_filters) {
@@ -493,6 +521,52 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
     
     /**
+     * Toggle any filter menu item (Price/Capacity) and track its checked state
+     * Unlike room types, these are single-selection within their group
+     */
+    private void toggleFilterMenuItem(MenuItem item) {
+        int itemId = item.getItemId();
+        
+        // Determine if this is a price or capacity item
+        boolean isPriceItem = (itemId == R.id.nav_price_all || itemId == R.id.nav_price_low || 
+                               itemId == R.id.nav_price_medium || itemId == R.id.nav_price_high);
+        boolean isCapacityItem = (itemId == R.id.nav_capacity_all || itemId == R.id.nav_capacity_1 || 
+                                  itemId == R.id.nav_capacity_2 || itemId == R.id.nav_capacity_3 ||
+                                  itemId == R.id.nav_capacity_4 || itemId == R.id.nav_capacity_5 ||
+                                  itemId == R.id.nav_capacity_6 || itemId == R.id.nav_capacity_7 ||
+                                  itemId == R.id.nav_capacity_8);
+        
+        if (isPriceItem) {
+            // Uncheck previous price item
+            if (checkedPriceItemId != null && navigationView != null) {
+                MenuItem prevItem = navigationView.getMenu().findItem(checkedPriceItemId);
+                if (prevItem != null) {
+                    prevItem.setChecked(false);
+                }
+            }
+            // Check new price item
+            checkedPriceItemId = itemId;
+            item.setChecked(true);
+        } else if (isCapacityItem) {
+            // Uncheck previous capacity item
+            if (checkedCapacityItemId != null && navigationView != null) {
+                MenuItem prevItem = navigationView.getMenu().findItem(checkedCapacityItemId);
+                if (prevItem != null) {
+                    prevItem.setChecked(false);
+                }
+            }
+            // Check new capacity item
+            checkedCapacityItemId = itemId;
+            item.setChecked(true);
+        }
+        
+        Log.d(TAG, "Checked filter item: " + item.getTitle());
+        
+        // Restore all checked states (including room types)
+        restoreMenuItemStates();
+    }
+    
+    /**
      * Restore checked state for all tracked menu items
      */
     private void restoreMenuItemStates() {
@@ -534,6 +608,8 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private void uncheckAllMenuItems() {
         // Clear tracking set
         checkedMenuItemIds.clear();
+        checkedPriceItemId = null;
+        checkedCapacityItemId = null;
         
         if (navigationView != null) {
             for (int i = 0; i < navigationView.getMenu().size(); i++) {
