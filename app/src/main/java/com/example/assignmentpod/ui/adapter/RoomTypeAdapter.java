@@ -131,7 +131,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             btnBook.setEnabled(available > 0);
             btnBook.setText(available > 0 ? "ĐẶT PHÒNG" : "HẾT PHÒNG");
             
-            // Reflect current cart status on star icon
+            // Reflect current cart status on star icon (one-time init per bind)
             if (cartRepository != null && lifecycleOwner != null && btnAddToCart != null) {
                 cartRepository.isRoomInCart(roomType.getId()).observe(lifecycleOwner, isInCart -> {
                     currentIsInCart = isInCart != null && isInCart;
@@ -155,23 +155,28 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             if (btnAddToCart != null) {
                 btnAddToCart.setEnabled(available > 0);
                 btnAddToCart.setOnClickListener(v -> {
-                    if (listener != null && available > 0) {
-                        // Toggle behavior: if already in cart → confirm remove, else add
-                        if (currentIsInCart != null && currentIsInCart) {
-                            new AlertDialog.Builder(v.getContext())
-                                    .setTitle("Xóa khỏi giỏ hàng")
-                                    .setMessage("Bạn có chắc muốn bỏ \"" + roomType.getName() + "\" khỏi giỏ hàng?")
-                                    .setPositiveButton("Bỏ khỏi giỏ", (dialog, which) -> {
-                                        updateStarIcon(false);
-                                        listener.onRemoveFromCartClick(roomType);
-                                    })
-                                    .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
-                                    .show();
-                        } else {
-                            // Optimistically fill the star
-                            updateStarIcon(true);
-                            listener.onAddToCartClick(roomType);
-                        }
+                    if (listener == null || available <= 0) return;
+
+                    // Simple debounce to avoid double taps
+                    btnAddToCart.setEnabled(false);
+                    btnAddToCart.postDelayed(() -> btnAddToCart.setEnabled(true), 300);
+
+                    boolean isInCartNow = currentIsInCart != null && currentIsInCart;
+                    if (isInCartNow) {
+                        new AlertDialog.Builder(v.getContext())
+                                .setTitle("Xóa khỏi giỏ hàng")
+                                .setMessage("Bạn có chắc muốn bỏ \"" + roomType.getName() + "\" khỏi giỏ hàng?")
+                                .setPositiveButton("Bỏ khỏi giỏ", (dialog, which) -> {
+                                    currentIsInCart = false;
+                                    updateStarIcon(false);
+                                    listener.onRemoveFromCartClick(roomType);
+                                })
+                                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                                .show();
+                    } else {
+                        currentIsInCart = true;
+                        updateStarIcon(true);
+                        listener.onAddToCartClick(roomType);
                     }
                 });
             }
