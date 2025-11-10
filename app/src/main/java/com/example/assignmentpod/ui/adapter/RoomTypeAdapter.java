@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.app.AlertDialog;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
@@ -36,6 +37,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         void onRoomTypeClick(RoomType roomType);
         void onBookClick(RoomType roomType);
         void onAddToCartClick(RoomType roomType);
+        void onRemoveFromCartClick(RoomType roomType);
     }
     
     public void setOnRoomTypeClickListener(OnRoomTypeClickListener listener) {
@@ -87,6 +89,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         private TextView tvPrice;
         private MaterialButton btnBook;
         private MaterialButton btnAddToCart;
+        private Boolean currentIsInCart = null;
 
         public RoomTypeViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -131,7 +134,8 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             // Reflect current cart status on star icon
             if (cartRepository != null && lifecycleOwner != null && btnAddToCart != null) {
                 cartRepository.isRoomInCart(roomType.getId()).observe(lifecycleOwner, isInCart -> {
-                    updateStarIcon(isInCart != null && isInCart);
+                    currentIsInCart = isInCart != null && isInCart;
+                    updateStarIcon(currentIsInCart);
                 });
             }
 
@@ -152,9 +156,22 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                 btnAddToCart.setEnabled(available > 0);
                 btnAddToCart.setOnClickListener(v -> {
                     if (listener != null && available > 0) {
-                        // Optimistically fill the star
-                        updateStarIcon(true);
-                        listener.onAddToCartClick(roomType);
+                        // Toggle behavior: if already in cart → confirm remove, else add
+                        if (currentIsInCart != null && currentIsInCart) {
+                            new AlertDialog.Builder(v.getContext())
+                                    .setTitle("Xóa khỏi giỏ hàng")
+                                    .setMessage("Bạn có chắc muốn bỏ \"" + roomType.getName() + "\" khỏi giỏ hàng?")
+                                    .setPositiveButton("Bỏ khỏi giỏ", (dialog, which) -> {
+                                        updateStarIcon(false);
+                                        listener.onRemoveFromCartClick(roomType);
+                                    })
+                                    .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                                    .show();
+                        } else {
+                            // Optimistically fill the star
+                            updateStarIcon(true);
+                            listener.onAddToCartClick(roomType);
+                        }
                     }
                 });
             }

@@ -386,6 +386,12 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
 
     @Override
+    public void onRemoveFromCartClick(RoomType roomType) {
+        cartRepository.removeFromCart(roomType.getId());
+        Toast.makeText(getContext(), "Đã bỏ khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         drawerLayout.closeDrawer(GravityCompat.START);
 
