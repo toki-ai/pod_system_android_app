@@ -245,6 +245,22 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         Log.d(TAG, "Applied filters. Result: " + filteredRoomTypes.size() + " room types from " + allFetchedRoomTypes.size());
     }
     
+    /**
+     * Reset pagination state và reload dữ liệu từ đầu
+     * Gọi method này mỗi khi thay đổi filter để tránh bug pagination
+     */
+    private void resetPaginationAndReload() {
+        currentPage = 1;
+        hasMorePages = true;
+        isLoadingMore = false;
+        allFetchedRoomTypes.clear();
+        
+        // Reload data from server with new filter
+        viewModel.refreshData();
+        
+        Log.d(TAG, "Reset pagination state and reloading data");
+    }
+    
     private void setupClickListeners() {
         ivFilter.setOnClickListener(v -> {
             if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -377,70 +393,72 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         drawerLayout.closeDrawer(GravityCompat.START);
-
         int itemId = item.getItemId();
         
+        // Room Type Filters
         if (itemId == R.id.nav_filter_single) {
-            filterRoomTypeName = "Single Pod";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Single Pod", Toast.LENGTH_SHORT).show();
+            applyRoomTypeFilter("Single Pod");
         } else if (itemId == R.id.nav_filter_double) {
-            filterRoomTypeName = "Double Pod";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Double Pod", Toast.LENGTH_SHORT).show();
+            applyRoomTypeFilter("Double Pod");
         } else if (itemId == R.id.nav_filter_meeting) {
-            filterRoomTypeName = "Meeting Room";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Meeting Room", Toast.LENGTH_SHORT).show();
+            applyRoomTypeFilter("Meeting Room");
         } else if (itemId == R.id.nav_filter_conference) {
-            filterRoomTypeName = "Conference Room";
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Filtered: Conference Room", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.nav_price_all) {
-            filterMinPrice = null;
-            filterMaxPrice = null;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "All Prices", Toast.LENGTH_SHORT).show();
+            applyRoomTypeFilter("Conference Room");
+        } 
+        // Price Range Filters
+        else if (itemId == R.id.nav_price_all) {
+            applyPriceFilter(null, null, "All Prices");
         } else if (itemId == R.id.nav_price_low) {
-            filterMinPrice = 0.0;
-            filterMaxPrice = 50000.0;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Under 50.000 VND", Toast.LENGTH_SHORT).show();
+            applyPriceFilter(0.0, 50000.0, "Under 50.000 VND");
         } else if (itemId == R.id.nav_price_medium) {
-            filterMinPrice = 50000.0;
-            filterMaxPrice = 100000.0;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "50.000 - 100.000 VND", Toast.LENGTH_SHORT).show();
+            applyPriceFilter(50000.0, 100000.0, "50.000 - 100.000 VND");
         } else if (itemId == R.id.nav_price_high) {
-            filterMinPrice = 100000.0;
-            filterMaxPrice = null;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "Above 100.000 VND", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.nav_capacity_all) {
-            filterCapacity = null;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "All Capacity", Toast.LENGTH_SHORT).show();
+            applyPriceFilter(100000.0, null, "Above 100.000 VND");
+        } 
+        // Capacity Filters
+        else if (itemId == R.id.nav_capacity_all) {
+            applyCapacityFilter(null, "All Capacity");
         } else if (itemId == R.id.nav_capacity_1) {
-            filterCapacity = 1;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "1 Person", Toast.LENGTH_SHORT).show();
+            applyCapacityFilter(1, "1 Person");
         } else if (itemId == R.id.nav_capacity_2) {
-            filterCapacity = 2;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "2 People", Toast.LENGTH_SHORT).show();
+            applyCapacityFilter(2, "2 People");
         } else if (itemId == R.id.nav_capacity_3) {
-            filterCapacity = 3;
-            applyFiltersAndUpdateUI();
-            Toast.makeText(getContext(), "3+ People", Toast.LENGTH_SHORT).show();
-        } else if (itemId == R.id.nav_reset_filters) {
+            applyCapacityFilter(3, "3+ People");
+        } 
+        // Reset Filters
+        else if (itemId == R.id.nav_reset_filters) {
             clearFilters();
-            Toast.makeText(getContext(), "All filters cleared", Toast.LENGTH_SHORT).show();
         }
         
-
-        Toast.makeText(getContext(), "Bộ lọc demo - " + item.getTitle(), Toast.LENGTH_SHORT).show();
-        
         return true;
+    }
+    
+    /**
+     * Apply room type name filter và reset pagination
+     */
+    private void applyRoomTypeFilter(String roomTypeName) {
+        filterRoomTypeName = roomTypeName;
+        resetPaginationAndReload();
+        Toast.makeText(getContext(), "Filtered: " + roomTypeName, Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Apply price range filter và reset pagination
+     */
+    private void applyPriceFilter(Double minPrice, Double maxPrice, String message) {
+        filterMinPrice = minPrice;
+        filterMaxPrice = maxPrice;
+        resetPaginationAndReload();
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Apply capacity filter và reset pagination
+     */
+    private void applyCapacityFilter(Integer capacity, String message) {
+        filterCapacity = capacity;
+        resetPaginationAndReload();
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     private void applyFilterByName(String filterName) {
@@ -460,10 +478,8 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             }
         }
 
-        // Reset pagination and apply filters
-        currentPage = 1;
-        hasMorePages = true;
-        applyFiltersAndUpdateUI();
+        // Reset pagination and reload
+        resetPaginationAndReload();
     }
 
     public void clearFilters() {
@@ -471,17 +487,17 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         filterMinPrice = null;
         filterMaxPrice = null;
         filterCapacity = null;
-        currentPage = 1;
-        hasMorePages = true;
-        applyFiltersAndUpdateUI();
+        
+        // Reset pagination and reload
+        resetPaginationAndReload();
     }
 
     public void applyFiltersByRange(double minPrice, double maxPrice) {
         filterMinPrice = minPrice;
         filterMaxPrice = maxPrice;
-        currentPage = 1;
-        hasMorePages = true;
-        applyFiltersAndUpdateUI();
+        
+        // Reset pagination and reload
+        resetPaginationAndReload();
     }
 
     @Override
