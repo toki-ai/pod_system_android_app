@@ -114,7 +114,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
     
     private void setupRecyclerView() {
-        roomTypeAdapter = new RoomTypeAdapter();
+        roomTypeAdapter = new RoomTypeAdapter(cartRepository, getViewLifecycleOwner());
         roomTypeAdapter.setOnRoomTypeClickListener(this);
         rvRoomTypes.setLayoutManager(new LinearLayoutManager(getContext()));
         rvRoomTypes.setAdapter(roomTypeAdapter);
