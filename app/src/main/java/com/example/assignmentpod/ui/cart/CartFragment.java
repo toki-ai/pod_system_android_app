@@ -30,7 +30,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private CartAdapter cartAdapter;
     private RecyclerView recyclerView;
     private View emptyCartLayout;
-    private TextView tvTotalItems, tvTotalPrice;
     private ImageView btnBack;
     
     @Override
@@ -62,8 +61,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private void initViews(View view) {
         recyclerView = view.findViewById(R.id.recycler_view_cart);
         emptyCartLayout = view.findViewById(R.id.empty_cart_layout);
-        tvTotalItems = view.findViewById(R.id.tv_total_items);
-        tvTotalPrice = view.findViewById(R.id.tv_total_price);
         btnBack = view.findViewById(R.id.btn_back);
     }
     
@@ -112,23 +109,11 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         if (cartItems == null || cartItems.isEmpty()) {
             emptyCartLayout.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
-            tvTotalItems.setText("Total: 0 items");
-            tvTotalPrice.setText("0 VND");
-            // checkout removed
+            // totals removed
         } else {
             emptyCartLayout.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-            
-            // Calculate totals
-            int totalItems = cartItems.size();
-            double totalPrice = 0.0;
-            for (CartItem item : cartItems) {
-                totalPrice += item.getRoomPrice();
-            }
-            
-            tvTotalItems.setText("Total: " + totalItems + " item" + (totalItems > 1 ? "s" : ""));
-            tvTotalPrice.setText(String.format("%,.0f VND", totalPrice));
-            // checkout removed
+            // totals removed
         }
     }
     

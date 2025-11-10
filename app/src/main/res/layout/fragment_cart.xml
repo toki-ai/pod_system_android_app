@@ -52,7 +52,7 @@
         android:padding="8dp"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@+id/header_layout"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_layout"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -65,7 +65,7 @@
         android:gravity="center"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/header_layout"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_layout"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -95,40 +95,6 @@
 
     </LinearLayout>
 
-    <!-- Bottom summary layout -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottom_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:elevation="8dp"
-        android:padding="16dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:id="@+id/tv_total_items"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Total: 0 items"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tv_total_price"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 VND"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/design_default_color_primary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Checkout button removed as per requirement -->
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Bottom summary layout removed (no totals or checkout) -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
