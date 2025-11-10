@@ -8,30 +8,26 @@
             android:enabled="false" />
     </group>
 
-    <group android:checkableBehavior="none">
+    <group android:checkableBehavior="all">
         <item
             android:id="@+id/nav_filter_single"
             android:title="Single Pod"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_filter_double"
             android:title="Double Pod" 
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_filter_meeting"
             android:title="Meeting Room"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
         
         <item
             android:id="@+id/nav_filter_conference"
             android:title="Conference Room"
-            android:checkable="true"
-            android:checked="true" />
+            android:checkable="true" />
     </group>
 
     <group android:checkableBehavior="none">

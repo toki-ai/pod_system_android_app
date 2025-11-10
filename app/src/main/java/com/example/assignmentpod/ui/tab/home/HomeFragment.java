@@ -63,7 +63,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private java.util.List<RoomType> allFetchedRoomTypes = new java.util.ArrayList<>();
 
     // Filter State
-    private String filterRoomTypeName = null;
+    private java.util.Set<String> filterRoomTypeNames = new java.util.HashSet<>(); // Changed to Set for multiple selection
     private Double filterMinPrice = null;
     private Double filterMaxPrice = null;
     private Integer filterCapacity = null;
@@ -220,13 +220,12 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
 
     private void applyFiltersAndUpdateUI() {
-        // Apply filters to all fetched room types
+        // Apply filters to all fetched room types using the new method that supports multiple room types
         java.util.List<RoomType> filteredRoomTypes = FilterHelper.filterRoomTypes(
                 allFetchedRoomTypes,
-                filterRoomTypeName,
+                filterRoomTypeNames,
                 filterMinPrice,
                 filterMaxPrice,
-                null,
                 filterCapacity
         );
 
@@ -392,7 +391,6 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        drawerLayout.closeDrawer(GravityCompat.START);
         int itemId = item.getItemId();
         
         // Room Type Filters
@@ -428,18 +426,29 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         // Reset Filters
         else if (itemId == R.id.nav_reset_filters) {
             clearFilters();
+            uncheckAllMenuItems();
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         }
         
+        // Don't close drawer immediately for filter items so user can see selection
+        // It will auto-close after a short delay
         return true;
     }
     
     /**
-     * Apply room type name filter và reset pagination
+     * Toggle room type name filter và reset pagination
      */
     private void applyRoomTypeFilter(String roomTypeName) {
-        filterRoomTypeName = roomTypeName;
+        // Toggle: if exists, remove it; if not, add it
+        if (filterRoomTypeNames.contains(roomTypeName)) {
+            filterRoomTypeNames.remove(roomTypeName);
+            Toast.makeText(getContext(), "Removed: " + roomTypeName, Toast.LENGTH_SHORT).show();
+        } else {
+            filterRoomTypeNames.add(roomTypeName);
+            Toast.makeText(getContext(), "Added: " + roomTypeName, Toast.LENGTH_SHORT).show();
+        }
         resetPaginationAndReload();
-        Toast.makeText(getContext(), "Filtered: " + roomTypeName, Toast.LENGTH_SHORT).show();
     }
     
     /**
@@ -460,11 +469,29 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         resetPaginationAndReload();
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
+    
+    /**
+     * Uncheck all menu items in navigation drawer
+     */
+    private void uncheckAllMenuItems() {
+        if (navigationView != null) {
+            for (int i = 0; i < navigationView.getMenu().size(); i++) {
+                MenuItem item = navigationView.getMenu().getItem(i);
+                if (item.hasSubMenu()) {
+                    for (int j = 0; j < item.getSubMenu().size(); j++) {
+                        item.getSubMenu().getItem(j).setChecked(false);
+                    }
+                } else {
+                    item.setChecked(false);
+                }
+            }
+        }
+    }
 
     private void applyFilterByName(String filterName) {
         // This method is kept for backward compatibility but can be enhanced
         // Reset current filters
-        filterRoomTypeName = null;
+        filterRoomTypeNames.clear();
         filterMinPrice = null;
         filterMaxPrice = null;
         filterCapacity = null;
@@ -474,7 +501,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
             // Check if it's a room type name
             java.util.List<String> roomTypeNames = FilterHelper.extractUniqueRoomNames(allFetchedRoomTypes);
             if (roomTypeNames.contains(filterName)) {
-                filterRoomTypeName = filterName;
+                filterRoomTypeNames.add(filterName);
             }
         }
 
@@ -483,7 +510,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
 
     public void clearFilters() {
-        filterRoomTypeName = null;
+        filterRoomTypeNames.clear();
         filterMinPrice = null;
         filterMaxPrice = null;
         filterCapacity = null;

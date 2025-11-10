@@ -125,6 +125,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/white"
+        app:shapeAppearance="@null"
         app:headerLayout="@layout/nav_header_filter"
         app:menu="@menu/drawer_filter_menu" />
 
