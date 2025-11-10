@@ -109,6 +109,22 @@
             android:name="roomTypeId"
             android:defaultValue="0"
             app:argType="integer" />
+        <argument
+            android:name="buildingId"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="servicePackageId"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="servicePackageName"
+            android:defaultValue="Unknown Package"
+            app:argType="string" />
+        <argument
+            android:name="servicePackageDiscountPercentage"
+            android:defaultValue="0"
+            app:argType="integer" />
         <action
             android:id="@+id/action_paymentFragment_to_paymentSuccessFragment"
             app:destination="@id/paymentSuccessFragment" />

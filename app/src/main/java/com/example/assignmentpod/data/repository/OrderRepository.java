@@ -8,6 +8,7 @@ import com.example.assignmentpod.data.remote.api.OrderAPI;
 import com.example.assignmentpod.data.remote.api.RetrofitClient;
 import com.example.assignmentpod.model.order.Order;
 import com.example.assignmentpod.model.order.OrderDetail;
+import com.example.assignmentpod.model.request.OrderDetailCreationRequest;
 import com.example.assignmentpod.model.response.ApiResponse;
 import com.example.assignmentpod.model.response.PaginationResponse;
 import com.example.assignmentpod.utils.NetworkUtils;
@@ -44,6 +45,11 @@ public class OrderRepository {
 
     public interface OrderDetailListCallback {
         void onSuccess(PaginationResponse<List<OrderDetail>> response);
+        void onError(String error);
+    }
+
+    public interface CreateOrderCallback {
+        void onSuccess(ApiResponse<String> response);
         void onError(String error);
     }
 
@@ -231,6 +237,74 @@ public class OrderRepository {
             public void onFailure(Call<PaginationResponse<List<OrderDetail>>> call, Throwable t) {
                 String errorMessage = NetworkUtils.getErrorMessage(t);
                 Log.e(TAG, "Network error loading order details: " + errorMessage, t);
+                callback.onError(errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Create a new order
+     */
+    public void createOrder(OrderDetailCreationRequest request, CreateOrderCallback callback) {
+        Log.d(TAG, "Starting createOrder...");
+
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            Log.e(TAG, "No network available");
+            callback.onError("No internet connection available");
+            return;
+        }
+
+        String accessToken = tokenManager.getAccessToken();
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            Log.e(TAG, "No access token found");
+            callback.onError("User not authenticated");
+            return;
+        }
+
+        String authHeader = "Bearer " + accessToken;
+        Call<ApiResponse<String>> call = orderAPI.createOrder(authHeader, request);
+
+        call.enqueue(new Callback<ApiResponse<String>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<String>> call,
+                                  Response<ApiResponse<String>> response) {
+                Log.d(TAG, "API response received. Code: " + response.code());
+
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<String> apiResponse = response.body();
+                    Log.d(TAG, "Response body received. Success: " + apiResponse.isSuccess());
+                    Log.d(TAG, "Order status: " + apiResponse.getData());
+                    Log.d(TAG, "Message: " + apiResponse.getMessage());
+
+                    if (apiResponse.isSuccess()) {
+                        callback.onSuccess(apiResponse);
+                    } else {
+                        String errorMessage = apiResponse.getMessage() != null ?
+                                apiResponse.getMessage() : "Failed to create order";
+                        Log.e(TAG, "API returned error: " + errorMessage);
+                        callback.onError(errorMessage);
+                    }
+                } else {
+                    String errorMessage = NetworkUtils.getErrorMessage(response.code());
+                    Log.e(TAG, "HTTP error - Code: " + response.code() + ", Message: " + errorMessage);
+
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error body: " + errorBody);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to read error body", e);
+                    }
+
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<String>> call, Throwable t) {
+                String errorMessage = NetworkUtils.getErrorMessage(t);
+                Log.e(TAG, "Network error creating order: " + errorMessage, t);
                 callback.onError(errorMessage);
             }
         });

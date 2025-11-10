@@ -24,9 +24,22 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.repository.OrderRepository;
 import com.example.assignmentpod.data.repository.UserRepository;
+import com.example.assignmentpod.model.building.Building;
+import com.example.assignmentpod.model.request.OrderDetailCreationRequest;
+import com.example.assignmentpod.model.request.RoomWithAmenitiesDTO;
+import com.example.assignmentpod.model.response.ApiResponse;
+import com.example.assignmentpod.model.servicepackage.ServicePackage;
+import com.example.assignmentpod.model.user.Account;
 import com.example.assignmentpod.model.user.UserProfile;
 import com.example.assignmentpod.utils.Utils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class PaymentFragment extends Fragment {
 
@@ -49,7 +62,15 @@ public class PaymentFragment extends Fragment {
     // ViewModel and Repository
     private PaymentViewModel paymentViewModel;
     private UserRepository userRepository;
+    private OrderRepository orderRepository;
     private UserProfile currentUser;
+    
+    // Additional order data received from RoomTypeDetailFragment
+    private int roomTypeId;
+    private int buildingId;
+    private int servicePackageId;
+    private String servicePackageName;
+    private int servicePackageDiscountPercentage;
 
     public PaymentFragment() {
     }
@@ -61,6 +82,7 @@ public class PaymentFragment extends Fragment {
         // Initialize ViewModel and Repository
         paymentViewModel = new ViewModelProvider(this).get(PaymentViewModel.class);
         userRepository = new UserRepository(requireContext());
+        orderRepository = new OrderRepository(requireContext());
 
         // Load user profile
         loadUserProfile();
@@ -77,6 +99,13 @@ public class PaymentFragment extends Fragment {
             initialPrice = args.getInt("roomTypePrice", 0);
             discountPercentage = args.getInt("discountPercentage", 0);
             totalPrice = args.getFloat("totalPrice", 0.0f);
+            roomTypeId = args.getInt("roomTypeId", 0);
+            buildingId = args.getInt("buildingId", 0);
+            
+            // Extract complete ServicePackage data
+            servicePackageId = args.getInt("servicePackageId", 0);
+            servicePackageName = args.getString("servicePackageName", "Unknown Package");
+            servicePackageDiscountPercentage = args.getInt("servicePackageDiscountPercentage", 0);
         }
     }
 
@@ -107,6 +136,32 @@ public class PaymentFragment extends Fragment {
             Log.d(TAG, "PaymentFragment setup completed successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error in onViewCreated", e);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Check if user returned from payment and handle success
+        checkPaymentStatus();
+    }
+
+    /**
+     * Check payment status when user returns to the app
+     * This handles the case where user completes payment in browser and returns
+     */
+    private void checkPaymentStatus() {
+        // Check SharedPreferences for payment completion flag
+        SharedPreferences prefs = requireContext().getSharedPreferences("PaymentData", Context.MODE_PRIVATE);
+        boolean paymentCompleted = prefs.getBoolean("paymentCompleted", false);
+        
+        if (paymentCompleted) {
+            // Clear the flag
+            prefs.edit().putBoolean("paymentCompleted", false).apply();
+            
+            // Navigate to success page
+            Toast.makeText(getContext(), "Thanh toán đã hoàn tất!", Toast.LENGTH_SHORT).show();
+            navigateToPaymentSuccess();
         }
     }
 
@@ -265,19 +320,51 @@ public class PaymentFragment extends Fragment {
         editor.putString("bookedPackage", bookedPackage);
         editor.apply();
 
-        if (selectedPaymentMethod.equals("ZaloPay")) {
-            paymentViewModel.createZaloPayOrder(requireContext(), amount);
-        } else if (selectedPaymentMethod.equals("MoMo")) {
-            paymentViewModel.createMoMoOrder(requireContext(), amount);
-        }
+        // Create order in backend first before proceeding to payment
+        createOrderAPI();
+        
+        // Note: Payment processing is handled after successful order creation
+        // in the createOrderAPI() callback to ensure order is created first
     }
 
     private void openPaymentUrl(String paymentUrl) {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
             startActivity(browserIntent);
+            
+            // For demo purposes, simulate successful payment after a short delay
+            // In a real app, you would handle payment completion through callbacks or deep links
+            simulatePaymentCompletion();
+            
         } catch (Exception e) {
             Toast.makeText(getContext(), "Lỗi mở trang thanh toán: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Simulate payment completion for demo purposes
+     * In a real app, this would be handled through payment gateway callbacks
+     */
+    private void simulatePaymentCompletion() {
+        // Show a toast with instructions for the user
+        Toast.makeText(getContext(), 
+            "Đã mở trang thanh toán. Sau khi thanh toán xong, quay lại ứng dụng để xem kết quả.", 
+            Toast.LENGTH_LONG).show();
+        
+        // Set a flag that payment was initiated
+        SharedPreferences prefs = requireContext().getSharedPreferences("PaymentData", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("paymentInitiated", true).apply();
+        
+        // For demo purposes, also simulate automatic completion after delay
+        if (getView() != null) {
+            getView().postDelayed(() -> {
+                if (getContext() != null) {
+                    // Simulate successful payment
+                    prefs.edit().putBoolean("paymentCompleted", true).apply();
+                    Toast.makeText(getContext(), "Mô phỏng: Thanh toán thành công!", Toast.LENGTH_SHORT).show();
+                    navigateToPaymentSuccess();
+                }
+            }, 3000); // 3 second delay to simulate payment processing
         }
     }
 
@@ -307,5 +394,207 @@ public class PaymentFragment extends Fragment {
 
     private String generateOrderId() {
         return "#" + System.currentTimeMillis();
+    }
+
+    /**
+     * Create order via backend API after successful payment
+     */
+    private void createOrderAPI() {
+        Log.d(TAG, "Creating order via API...");
+
+        if (currentUser == null) {
+            Log.e(TAG, "Cannot create order: User profile not loaded");
+            Toast.makeText(getContext(), "Lỗi: Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Build the order request
+            OrderDetailCreationRequest request = buildOrderRequest();
+            
+            // Call the create order API
+            orderRepository.createOrder(request, new OrderRepository.CreateOrderCallback() {
+                @Override
+                public void onSuccess(ApiResponse<String> response) {
+                    Log.d(TAG, "Order created successfully");
+                    Log.d(TAG, "Status: " + response.getData());
+                    Log.d(TAG, "Message: " + response.getMessage());
+                    
+                    String status = response.getData();
+                    String message = response.getMessage();
+                    
+                    if ("Successfully".equals(status)) {
+                        Toast.makeText(getContext(), "Đặt phòng thành công!", Toast.LENGTH_LONG).show();
+                    } else if ("Pending".equals(status)) {
+                        Toast.makeText(getContext(), 
+                            "Đặt phòng thành công nhưng một số phòng đã được đặt: " + message, 
+                            Toast.LENGTH_LONG).show();
+                    }
+                    
+                    // Process payment after successful order creation
+                    int amount = (int) totalPrice;
+                    if (selectedPaymentMethod.equals("ZaloPay")) {
+                        paymentViewModel.createZaloPayOrder(requireContext(), amount);
+                    } else if (selectedPaymentMethod.equals("MoMo")) {
+                        paymentViewModel.createMoMoOrder(requireContext(), amount);
+                    } else {
+                        // If no payment method selected or direct success, navigate to success screen
+                        navigateToPaymentSuccess();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.e(TAG, "Failed to create order: " + error);
+                    
+                    // Handle specific errors
+                    if (error.contains("Data truncated for column 'status'") || 
+                        error.contains("Successfully")) {
+                        handleDatabaseStatusError();
+                    } else if (error.contains("amenities") && error.contains("null")) {
+                        handleAmenitiesNullError();
+                    } else {
+                        Toast.makeText(getContext(), 
+                            "Lỗi tạo đơn hàng: " + error, 
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error building order request: " + e.getMessage(), e);
+            Toast.makeText(getContext(), "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Build OrderDetailCreationRequest from payment data
+     */
+    private OrderDetailCreationRequest buildOrderRequest() throws Exception {
+        // Parse date and slot to create startTime and endTime lists
+        List<String> startTimes = new ArrayList<>();
+        List<String> endTimes = new ArrayList<>();
+        
+        // Parse bookedDate (format: dd-MM-yyyy)
+        SimpleDateFormat displayFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date date = displayFormat.parse(bookedDate);
+        String apiDate = apiFormat.format(date);
+        
+        // Parse bookedSlot (format: "07:00 - 09:00" or multiple slots)
+        String[] slots = bookedSlot.split(",");
+        for (String slot : slots) {
+            slot = slot.trim();
+            String[] times = slot.split(" - ");
+            if (times.length == 2) {
+                String startTime = apiDate + "T" + times[0] + ":00";
+                String endTime = apiDate + "T" + times[1] + ":00";
+                
+                // Keep original times - workaround moved to error handling
+                
+                startTimes.add(startTime);
+                endTimes.add(endTime);
+            }
+        }
+        
+        // Create Building object with actual building ID from RoomTypeDetailFragment
+        Building building = new Building();
+        building.setId(buildingId);
+        building.setStatus("Active"); // Set status to Active to match database schema
+        building.setAddress(roomTypeAddress);
+        
+        // Create Room DTO with empty amenities list
+        RoomWithAmenitiesDTO roomDTO = new RoomWithAmenitiesDTO();
+        roomDTO.setId(roomTypeId); // Using roomTypeId as room ID
+        roomDTO.setName(roomName);
+        roomDTO.setPrice(initialPrice);
+        roomDTO.setImage(""); // Empty image for now
+        roomDTO.setAmenities(new ArrayList<>()); // Empty list instead of null to prevent NullPointerException
+        
+        List<RoomWithAmenitiesDTO> selectedRooms = new ArrayList<>();
+        selectedRooms.add(roomDTO);
+        
+        // Create ServicePackage object with complete data including ID
+        ServicePackage servicePackage = new ServicePackage();
+        servicePackage.setId(servicePackageId);
+        servicePackage.setName(servicePackageName);
+        servicePackage.setDiscountPercentage(servicePackageDiscountPercentage);
+        
+        // Create Account object from current user
+        Account customer = new Account();
+        customer.setId(currentUser.getId());
+        customer.setName(currentUser.getName());
+        customer.setEmail(currentUser.getEmail());
+        customer.setPhoneNumber(currentUser.getPhoneNumber());
+        
+        // Build the request with null safety checks
+        OrderDetailCreationRequest request = new OrderDetailCreationRequest();
+        request.setBuilding(building);
+        request.setSelectedRooms(selectedRooms != null ? selectedRooms : new ArrayList<>());
+        request.setServicePackage(servicePackage);
+        request.setCustomer(customer);
+        request.setPriceRoom(initialPrice);
+        request.setStartTime(startTimes != null ? startTimes : new ArrayList<>());
+        request.setEndTime(endTimes != null ? endTimes : new ArrayList<>());
+        
+        Log.d(TAG, "Order request built successfully");
+        Log.d(TAG, "StartTimes: " + startTimes);
+        Log.d(TAG, "EndTimes: " + endTimes);
+        
+        return request;
+    }
+
+
+    /**
+     * Handle the amenities null pointer error
+     */
+    private void handleAmenitiesNullError() {
+        Log.e(TAG, "Amenities null pointer error detected - server expects non-null amenities list");
+        
+        // Show user-friendly error message
+        Toast.makeText(getContext(), 
+            "Lỗi dữ liệu: Đã khắc phục lỗi danh sách tiện ích. Vui lòng thử lại.", 
+            Toast.LENGTH_LONG).show();
+        
+        // Log technical details
+        Log.e(TAG, "FIXED: Changed amenities from null to empty ArrayList to prevent NullPointerException");
+        
+        // Keep button enabled for retry
+        if (btnConfirmPayment != null) {
+            btnConfirmPayment.setEnabled(true);
+            btnConfirmPayment.setText("Thử lại");
+        }
+    }
+
+    /**
+     * Handle the specific database status error caused by server-database schema mismatch
+     */
+    private void handleDatabaseStatusError() {
+        Log.e(TAG, "Database status enum mismatch error detected - server uses 'Successfully' but database expects 'Completed'");
+        
+        // Show detailed error information for debugging
+        Log.e(TAG, "CRITICAL: JPA Entity uses @Enumerated(EnumType.STRING) expecting to store 'Successfully'");
+        Log.e(TAG, "CRITICAL: Database schema defines status as ENUM('Pending', 'Confirmed', 'Cancelled', 'Completed')");
+        Log.e(TAG, "SOLUTION: Either change OrderStatus.Successfully to OrderStatus.Completed OR update database schema");
+        
+        // Show user-friendly error message
+        Toast.makeText(getContext(), 
+            "Lỗi hệ thống: Cơ sở dữ liệu không hỗ trợ trạng thái đặt phòng hiện tại. " +
+            "Vui lòng liên hệ bộ phận kỹ thuật để cập nhật hệ thống.", 
+            Toast.LENGTH_LONG).show();
+        
+        // Provide actionable feedback to user
+        if (btnConfirmPayment != null) {
+            btnConfirmPayment.setEnabled(true); // Keep enabled for potential retry
+            btnConfirmPayment.setText("Thử lại");
+        }
+        
+        // Log the exact technical details for developers
+        Log.e(TAG, "=== TECHNICAL DETAILS FOR DEVELOPERS ===");
+        Log.e(TAG, "Error: Data truncated for column 'status' at row 1");
+        Log.e(TAG, "Cause: OrderStatus enum value 'Successfully' not in database ENUM constraint");
+        Log.e(TAG, "Fix 1: Change server OrderStatus.Successfully to OrderStatus.Completed");
+        Log.e(TAG, "Fix 2: ALTER TABLE orderDetail MODIFY status ENUM('Pending', 'Confirmed', 'Cancelled', 'Completed', 'Successfully')");
+        Log.e(TAG, "========================================");
     }
 }

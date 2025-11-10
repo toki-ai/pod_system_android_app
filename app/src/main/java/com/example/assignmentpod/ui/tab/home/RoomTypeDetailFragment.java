@@ -300,6 +300,12 @@ public class RoomTypeDetailFragment extends Fragment {
             args.putInt("discountPercentage", internalServicePackage.getDiscountPercentage());
             args.putFloat("totalPrice", internalTotalPrice);
             args.putInt("roomTypeId", internalRoomType.getId());
+            args.putInt("buildingId", internalRoomType.getBuilding().getId());
+            
+            // Pass complete ServicePackage data
+            args.putInt("servicePackageId", internalServicePackage.getId());
+            args.putString("servicePackageName", internalServicePackage.getName());
+            args.putInt("servicePackageDiscountPercentage", internalServicePackage.getDiscountPercentage());
 
             Navigation.findNavController(v)
                     .navigate(R.id.action_roomTypeDetailFragment_to_paymentFragment, args);
