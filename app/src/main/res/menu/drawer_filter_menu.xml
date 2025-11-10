@@ -8,7 +8,7 @@
             android:enabled="false" />
     </group>
 
-    <group android:checkableBehavior="all">
+    <group android:checkableBehavior="none">
         <item
             android:id="@+id/nav_filter_single"
             android:title="Single Pod"

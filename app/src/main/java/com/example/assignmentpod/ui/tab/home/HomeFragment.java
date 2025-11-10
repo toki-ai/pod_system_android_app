@@ -2,6 +2,8 @@ package com.example.assignmentpod.ui.tab.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -399,16 +401,16 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         // Room Type Filters - manually toggle checked state for multiple selection
         if (itemId == R.id.nav_filter_single) {
             toggleRoomTypeMenuItem(item, "Single Pod");
-            return true; // Don't close drawer
+            return false; // Return false to prevent NavigationView from handling checked state
         } else if (itemId == R.id.nav_filter_double) {
             toggleRoomTypeMenuItem(item, "Double Pod");
-            return true;
+            return false;
         } else if (itemId == R.id.nav_filter_meeting) {
             toggleRoomTypeMenuItem(item, "Meeting Room");
-            return true;
+            return false;
         } else if (itemId == R.id.nav_filter_conference) {
             toggleRoomTypeMenuItem(item, "Conference Room");
-            return true;
+            return false;
         } 
         // Price Range Filters
         else if (itemId == R.id.nav_price_all) {
@@ -478,9 +480,11 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         if (checkedMenuItemIds.contains(itemId)) {
             checkedMenuItemIds.remove(itemId);
             item.setChecked(false);
+            Log.d(TAG, "Unchecked item: " + roomTypeName + ", tracking set size: " + checkedMenuItemIds.size());
         } else {
             checkedMenuItemIds.add(itemId);
             item.setChecked(true);
+            Log.d(TAG, "Checked item: " + roomTypeName + ", tracking set size: " + checkedMenuItemIds.size());
         }
         
         // Apply filter logic
@@ -494,14 +498,19 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
      * Restore checked state for all tracked menu items
      */
     private void restoreMenuItemStates() {
-        if (navigationView != null) {
-            for (Integer itemId : checkedMenuItemIds) {
-                MenuItem item = navigationView.getMenu().findItem(itemId);
-                if (item != null) {
-                    item.setChecked(true);
+        // Use Handler to delay restoration to avoid NavigationView overriding the state
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (navigationView != null) {
+                Log.d(TAG, "Restoring checked state for " + checkedMenuItemIds.size() + " items");
+                for (Integer itemId : checkedMenuItemIds) {
+                    MenuItem item = navigationView.getMenu().findItem(itemId);
+                    if (item != null) {
+                        item.setChecked(true);
+                        Log.d(TAG, "Restored checked state for item: " + item.getTitle());
+                    }
                 }
             }
-        }
+        });
     }
     
     /**
