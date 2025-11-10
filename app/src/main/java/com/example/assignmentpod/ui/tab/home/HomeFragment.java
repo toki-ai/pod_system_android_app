@@ -67,6 +67,9 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     private Double filterMinPrice = null;
     private Double filterMaxPrice = null;
     private Integer filterCapacity = null;
+    
+    // Track checked menu items for visual state
+    private java.util.Set<Integer> checkedMenuItemIds = new java.util.HashSet<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -395,20 +398,16 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         
         // Room Type Filters - manually toggle checked state for multiple selection
         if (itemId == R.id.nav_filter_single) {
-            item.setChecked(!item.isChecked());
-            applyRoomTypeFilter("Single Pod");
+            toggleRoomTypeMenuItem(item, "Single Pod");
             return true; // Don't close drawer
         } else if (itemId == R.id.nav_filter_double) {
-            item.setChecked(!item.isChecked());
-            applyRoomTypeFilter("Double Pod");
+            toggleRoomTypeMenuItem(item, "Double Pod");
             return true;
         } else if (itemId == R.id.nav_filter_meeting) {
-            item.setChecked(!item.isChecked());
-            applyRoomTypeFilter("Meeting Room");
+            toggleRoomTypeMenuItem(item, "Meeting Room");
             return true;
         } else if (itemId == R.id.nav_filter_conference) {
-            item.setChecked(!item.isChecked());
-            applyRoomTypeFilter("Conference Room");
+            toggleRoomTypeMenuItem(item, "Conference Room");
             return true;
         } 
         // Price Range Filters
@@ -429,7 +428,17 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         } else if (itemId == R.id.nav_capacity_2) {
             applyCapacityFilter(2, "2 People");
         } else if (itemId == R.id.nav_capacity_3) {
-            applyCapacityFilter(3, "3+ People");
+            applyCapacityFilter(3, "3 People");
+        } else if (itemId == R.id.nav_capacity_4) {
+            applyCapacityFilter(4, "4 People");
+        } else if (itemId == R.id.nav_capacity_5) {
+            applyCapacityFilter(5, "5 People");
+        } else if (itemId == R.id.nav_capacity_6) {
+            applyCapacityFilter(6, "6 People");
+        } else if (itemId == R.id.nav_capacity_7) {
+            applyCapacityFilter(7, "7 People");
+        } else if (itemId == R.id.nav_capacity_8) {
+            applyCapacityFilter(8, "8 People");
         } 
         // Reset Filters
         else if (itemId == R.id.nav_reset_filters) {
@@ -460,6 +469,42 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
     
     /**
+     * Toggle room type menu item and track its checked state
+     */
+    private void toggleRoomTypeMenuItem(MenuItem item, String roomTypeName) {
+        int itemId = item.getItemId();
+        
+        // Toggle checked state in tracking set
+        if (checkedMenuItemIds.contains(itemId)) {
+            checkedMenuItemIds.remove(itemId);
+            item.setChecked(false);
+        } else {
+            checkedMenuItemIds.add(itemId);
+            item.setChecked(true);
+        }
+        
+        // Apply filter logic
+        applyRoomTypeFilter(roomTypeName);
+        
+        // Restore all checked states (workaround for NavigationView behavior)
+        restoreMenuItemStates();
+    }
+    
+    /**
+     * Restore checked state for all tracked menu items
+     */
+    private void restoreMenuItemStates() {
+        if (navigationView != null) {
+            for (Integer itemId : checkedMenuItemIds) {
+                MenuItem item = navigationView.getMenu().findItem(itemId);
+                if (item != null) {
+                    item.setChecked(true);
+                }
+            }
+        }
+    }
+    
+    /**
      * Apply price range filter và reset pagination
      */
     private void applyPriceFilter(Double minPrice, Double maxPrice, String message) {
@@ -482,6 +527,9 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
      * Uncheck all menu items in navigation drawer
      */
     private void uncheckAllMenuItems() {
+        // Clear tracking set
+        checkedMenuItemIds.clear();
+        
         if (navigationView != null) {
             for (int i = 0; i < navigationView.getMenu().size(); i++) {
                 MenuItem item = navigationView.getMenu().getItem(i);

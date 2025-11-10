@@ -86,7 +86,32 @@
         
         <item
             android:id="@+id/nav_capacity_3"
-            android:title="3+ People"
+            android:title="3 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_4"
+            android:title="4 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_5"
+            android:title="5 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_6"
+            android:title="6 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_7"
+            android:title="7 People"
+            android:checkable="true" />
+            
+        <item
+            android:id="@+id/nav_capacity_8"
+            android:title="8 People"
             android:checkable="true" />
     </group>
 
