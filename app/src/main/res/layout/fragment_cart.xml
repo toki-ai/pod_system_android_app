@@ -127,16 +127,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_checkout"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Proceed to Checkout"
-            android:textSize="16sp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@+id/tv_total_items"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Checkout button removed as per requirement -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

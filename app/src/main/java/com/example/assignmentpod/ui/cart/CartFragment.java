@@ -31,7 +31,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private RecyclerView recyclerView;
     private View emptyCartLayout;
     private TextView tvTotalItems, tvTotalPrice;
-    private MaterialButton btnCheckout;
     private ImageView btnBack;
     
     @Override
@@ -65,7 +64,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         emptyCartLayout = view.findViewById(R.id.empty_cart_layout);
         tvTotalItems = view.findViewById(R.id.tv_total_items);
         tvTotalPrice = view.findViewById(R.id.tv_total_price);
-        btnCheckout = view.findViewById(R.id.btn_checkout);
         btnBack = view.findViewById(R.id.btn_back);
     }
     
@@ -100,14 +98,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
             });
         });
         
-        btnCheckout.setOnClickListener(v -> {
-            // Add button press animation
-            v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
-                .withEndAction(() -> {
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(100);
-                    Toast.makeText(getContext(), "Tính năng thanh toán sẽ có sớm!", Toast.LENGTH_SHORT).show();
-                });
-        });
+        // Removed checkout interaction
     }
     
     private void observeData() {
@@ -123,8 +114,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
             recyclerView.setVisibility(View.GONE);
             tvTotalItems.setText("Total: 0 items");
             tvTotalPrice.setText("0 VND");
-            btnCheckout.setEnabled(false);
-            btnCheckout.setAlpha(0.5f);
+            // checkout removed
         } else {
             emptyCartLayout.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
@@ -138,8 +128,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
             
             tvTotalItems.setText("Total: " + totalItems + " item" + (totalItems > 1 ? "s" : ""));
             tvTotalPrice.setText(String.format("%,.0f VND", totalPrice));
-            btnCheckout.setEnabled(true);
-            btnCheckout.setAlpha(1.0f);
+            // checkout removed
         }
     }
     
