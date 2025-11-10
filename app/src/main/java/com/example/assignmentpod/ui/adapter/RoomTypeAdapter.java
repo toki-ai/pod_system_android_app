@@ -5,11 +5,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.app.AlertDialog;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignmentpod.R;
+import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.model.room.RoomType;
 import com.google.android.material.button.MaterialButton;
 
@@ -22,11 +25,19 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
     
     private List<RoomType> roomTypes = new ArrayList<>();
     private OnRoomTypeClickListener listener;
+    private final CartRepository cartRepository;
+    private final LifecycleOwner lifecycleOwner;
     
+    public RoomTypeAdapter(CartRepository cartRepository, LifecycleOwner lifecycleOwner) {
+        this.cartRepository = cartRepository;
+        this.lifecycleOwner = lifecycleOwner;
+    }
+
     public interface OnRoomTypeClickListener {
         void onRoomTypeClick(RoomType roomType);
         void onBookClick(RoomType roomType);
-            void onAddToCartClick(RoomType roomType);
+        void onAddToCartClick(RoomType roomType);
+        void onRemoveFromCartClick(RoomType roomType);
     }
     
     public void setOnRoomTypeClickListener(OnRoomTypeClickListener listener) {
@@ -77,7 +88,8 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         private TextView tvAvailable;
         private TextView tvPrice;
         private MaterialButton btnBook;
-            private MaterialButton btnAddToCart;
+        private MaterialButton btnAddToCart;
+        private Boolean currentIsInCart = null;
 
         public RoomTypeViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -88,7 +100,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             tvAvailable = itemView.findViewById(R.id.tv_available);
             tvPrice = itemView.findViewById(R.id.tv_price);
             btnBook = itemView.findViewById(R.id.btn_book);
-                btnAddToCart = itemView.findViewById(R.id.btn_add_to_cart);
+            btnAddToCart = itemView.findViewById(R.id.btn_add_to_cart);
         }
 
         public void bind(RoomType roomType) {
@@ -119,6 +131,14 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             btnBook.setEnabled(available > 0);
             btnBook.setText(available > 0 ? "ĐẶT PHÒNG" : "HẾT PHÒNG");
             
+            // Reflect current cart status on star icon (one-time init per bind)
+            if (cartRepository != null && lifecycleOwner != null && btnAddToCart != null) {
+                cartRepository.isRoomInCart(roomType.getId()).observe(lifecycleOwner, isInCart -> {
+                    currentIsInCart = isInCart != null && isInCart;
+                    updateStarIcon(currentIsInCart);
+                });
+            }
+
             // Set click listeners
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
@@ -132,16 +152,47 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                 }
             });
 
-                if (btnAddToCart != null) {
-                    btnAddToCart.setEnabled(available > 0);
-                    btnAddToCart.setOnClickListener(v -> {
-                        if (listener != null && available > 0) {
-                            listener.onAddToCartClick(roomType);
-                        }
-                    });
-                }
+            if (btnAddToCart != null) {
+                btnAddToCart.setEnabled(available > 0);
+                btnAddToCart.setOnClickListener(v -> {
+                    if (listener == null || available <= 0) return;
+
+                    // Simple debounce to avoid double taps
+                    btnAddToCart.setEnabled(false);
+                    btnAddToCart.postDelayed(() -> btnAddToCart.setEnabled(true), 300);
+
+                    boolean isInCartNow = currentIsInCart != null && currentIsInCart;
+                    if (isInCartNow) {
+                        new AlertDialog.Builder(v.getContext())
+                                .setTitle("Xóa khỏi giỏ hàng")
+                                .setMessage("Bạn có chắc muốn bỏ \"" + roomType.getName() + "\" khỏi giỏ hàng?")
+                                .setPositiveButton("Bỏ khỏi giỏ", (dialog, which) -> {
+                                    currentIsInCart = false;
+                                    updateStarIcon(false);
+                                    listener.onRemoveFromCartClick(roomType);
+                                })
+                                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                                .show();
+                    } else {
+                        currentIsInCart = true;
+                        updateStarIcon(true);
+                        listener.onAddToCartClick(roomType);
+                    }
+                });
+            }
         }
         
+        private void updateStarIcon(boolean isInCart) {
+            if (btnAddToCart == null) return;
+            if (isInCart) {
+                btnAddToCart.setIconResource(R.drawable.ic_star_filled);
+                btnAddToCart.setIconTintResource(R.color.star_yellow);
+            } else {
+                btnAddToCart.setIconResource(R.drawable.ic_star_outline);
+                btnAddToCart.setIconTintResource(R.color.gray);
+            }
+        }
+
         private String generateDescription(String roomTypeName) {
             if (roomTypeName == null) {
                 return "Tư nhân, riêng tư";

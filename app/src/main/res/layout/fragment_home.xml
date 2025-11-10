@@ -68,6 +68,8 @@
                 android:src="@drawable/ic_cart"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="4dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -84,7 +86,7 @@
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@+id/iv_cart"
                 app:layout_constraintTop_toTopOf="@+id/iv_cart"
-                android:layout_marginTop="-8dp"
+                android:layout_marginTop="-6dp"
                 android:layout_marginEnd="-8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

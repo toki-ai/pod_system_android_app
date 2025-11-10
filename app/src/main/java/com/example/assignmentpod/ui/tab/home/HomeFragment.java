@@ -121,7 +121,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
     
     private void setupRecyclerView() {
-        roomTypeAdapter = new RoomTypeAdapter();
+        roomTypeAdapter = new RoomTypeAdapter(cartRepository, getViewLifecycleOwner());
         roomTypeAdapter.setOnRoomTypeClickListener(this);
         rvRoomTypes.setLayoutManager(new LinearLayoutManager(getContext()));
         rvRoomTypes.setAdapter(roomTypeAdapter);
@@ -294,12 +294,23 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     }
     
     private void observeCartCount() {
+        if (tvCartBadge == null) {
+            Log.e(TAG, "tvCartBadge is null, cannot observe cart count");
+            return;
+        }
+        
         cartRepository.getCartItemCount().observe(getViewLifecycleOwner(), count -> {
+            if (tvCartBadge == null) {
+                return;
+            }
+            
             if (count != null && count > 0) {
                 tvCartBadge.setVisibility(View.VISIBLE);
                 tvCartBadge.setText(String.valueOf(count));
+                Log.d(TAG, "Cart badge updated: " + count);
             } else {
                 tvCartBadge.setVisibility(View.GONE);
+                Log.d(TAG, "Cart badge hidden: count is " + count);
             }
         });
     }
@@ -394,6 +405,12 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
 
         cartRepository.addToCart(room);
         Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRemoveFromCartClick(RoomType roomType) {
+        cartRepository.removeFromCart(roomType.getId());
+        Toast.makeText(getContext(), "Đã bỏ khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 
     @Override

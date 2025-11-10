@@ -1,5 +1,6 @@
 package com.example.assignmentpod.ui.cart;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +30,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private CartAdapter cartAdapter;
     private RecyclerView recyclerView;
     private View emptyCartLayout;
-    private TextView tvTotalItems, tvTotalPrice;
-    private MaterialButton btnCheckout;
     private ImageView btnBack;
     
     @Override
@@ -62,9 +61,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     private void initViews(View view) {
         recyclerView = view.findViewById(R.id.recycler_view_cart);
         emptyCartLayout = view.findViewById(R.id.empty_cart_layout);
-        tvTotalItems = view.findViewById(R.id.tv_total_items);
-        tvTotalPrice = view.findViewById(R.id.tv_total_price);
-        btnCheckout = view.findViewById(R.id.btn_checkout);
         btnBack = view.findViewById(R.id.btn_back);
     }
     
@@ -99,14 +95,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
             });
         });
         
-        btnCheckout.setOnClickListener(v -> {
-            // Add button press animation
-            v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
-                .withEndAction(() -> {
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(100);
-                    Toast.makeText(getContext(), "Tính năng thanh toán sẽ có sớm!", Toast.LENGTH_SHORT).show();
-                });
-        });
+        // Removed checkout interaction
     }
     
     private void observeData() {
@@ -120,25 +109,11 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
         if (cartItems == null || cartItems.isEmpty()) {
             emptyCartLayout.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
-            tvTotalItems.setText("Total: 0 items");
-            tvTotalPrice.setText("0 VND");
-            btnCheckout.setEnabled(false);
-            btnCheckout.setAlpha(0.5f);
+            // totals removed
         } else {
             emptyCartLayout.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-            
-            // Calculate totals
-            int totalItems = cartItems.size();
-            double totalPrice = 0.0;
-            for (CartItem item : cartItems) {
-                totalPrice += item.getRoomPrice();
-            }
-            
-            tvTotalItems.setText("Total: " + totalItems + " item" + (totalItems > 1 ? "s" : ""));
-            tvTotalPrice.setText(String.format("%,.0f VND", totalPrice));
-            btnCheckout.setEnabled(true);
-            btnCheckout.setAlpha(1.0f);
+            // totals removed
         }
     }
     
@@ -161,7 +136,18 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemClic
     
     @Override
     public void onDeleteClick(CartItem cartItem) {
-        cartViewModel.removeFromCart(cartItem);
-        Toast.makeText(getContext(), "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
+        // Show confirmation dialog before deleting
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa \"" + cartItem.getRoomName() + "\" khỏi giỏ hàng?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    cartViewModel.removeFromCart(cartItem);
+                    Toast.makeText(getContext(), "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 }
