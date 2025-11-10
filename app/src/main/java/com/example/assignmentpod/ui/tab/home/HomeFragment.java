@@ -393,15 +393,23 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         
-        // Room Type Filters
+        // Room Type Filters - manually toggle checked state for multiple selection
         if (itemId == R.id.nav_filter_single) {
+            item.setChecked(!item.isChecked());
             applyRoomTypeFilter("Single Pod");
+            return true; // Don't close drawer
         } else if (itemId == R.id.nav_filter_double) {
+            item.setChecked(!item.isChecked());
             applyRoomTypeFilter("Double Pod");
+            return true;
         } else if (itemId == R.id.nav_filter_meeting) {
+            item.setChecked(!item.isChecked());
             applyRoomTypeFilter("Meeting Room");
+            return true;
         } else if (itemId == R.id.nav_filter_conference) {
+            item.setChecked(!item.isChecked());
             applyRoomTypeFilter("Conference Room");
+            return true;
         } 
         // Price Range Filters
         else if (itemId == R.id.nav_price_all) {
