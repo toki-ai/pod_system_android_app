@@ -414,33 +414,33 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         } 
         // Price Range Filters
         else if (itemId == R.id.nav_price_all) {
-            applyPriceFilter(null, null, "All Prices");
+            applyPriceFilter(null, null);
         } else if (itemId == R.id.nav_price_low) {
-            applyPriceFilter(0.0, 50000.0, "Under 50.000 VND");
+            applyPriceFilter(0.0, 50000.0);
         } else if (itemId == R.id.nav_price_medium) {
-            applyPriceFilter(50000.0, 100000.0, "50.000 - 100.000 VND");
+            applyPriceFilter(50000.0, 100000.0);
         } else if (itemId == R.id.nav_price_high) {
-            applyPriceFilter(100000.0, null, "Above 100.000 VND");
+            applyPriceFilter(100000.0, null);
         } 
         // Capacity Filters
         else if (itemId == R.id.nav_capacity_all) {
-            applyCapacityFilter(null, "All Capacity");
+            applyCapacityFilter(null);
         } else if (itemId == R.id.nav_capacity_1) {
-            applyCapacityFilter(1, "1 Person");
+            applyCapacityFilter(1);
         } else if (itemId == R.id.nav_capacity_2) {
-            applyCapacityFilter(2, "2 People");
+            applyCapacityFilter(2);
         } else if (itemId == R.id.nav_capacity_3) {
-            applyCapacityFilter(3, "3 People");
+            applyCapacityFilter(3);
         } else if (itemId == R.id.nav_capacity_4) {
-            applyCapacityFilter(4, "4 People");
+            applyCapacityFilter(4);
         } else if (itemId == R.id.nav_capacity_5) {
-            applyCapacityFilter(5, "5 People");
+            applyCapacityFilter(5);
         } else if (itemId == R.id.nav_capacity_6) {
-            applyCapacityFilter(6, "6 People");
+            applyCapacityFilter(6);
         } else if (itemId == R.id.nav_capacity_7) {
-            applyCapacityFilter(7, "7 People");
+            applyCapacityFilter(7);
         } else if (itemId == R.id.nav_capacity_8) {
-            applyCapacityFilter(8, "8 People");
+            applyCapacityFilter(8);
         } 
         // Reset Filters
         else if (itemId == R.id.nav_reset_filters) {
@@ -462,10 +462,8 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         // Toggle: if exists, remove it; if not, add it
         if (filterRoomTypeNames.contains(roomTypeName)) {
             filterRoomTypeNames.remove(roomTypeName);
-            Toast.makeText(getContext(), "Removed: " + roomTypeName, Toast.LENGTH_SHORT).show();
         } else {
             filterRoomTypeNames.add(roomTypeName);
-            Toast.makeText(getContext(), "Added: " + roomTypeName, Toast.LENGTH_SHORT).show();
         }
         resetPaginationAndReload();
     }
@@ -516,20 +514,18 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
     /**
      * Apply price range filter và reset pagination
      */
-    private void applyPriceFilter(Double minPrice, Double maxPrice, String message) {
+    private void applyPriceFilter(Double minPrice, Double maxPrice) {
         filterMinPrice = minPrice;
         filterMaxPrice = maxPrice;
         resetPaginationAndReload();
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
     
     /**
      * Apply capacity filter và reset pagination
      */
-    private void applyCapacityFilter(Integer capacity, String message) {
+    private void applyCapacityFilter(Integer capacity) {
         filterCapacity = capacity;
         resetPaginationAndReload();
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
     
     /**
