@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#E0E0E0" />
-    <corners android:radius="8dp" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_variant" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    
+    <!-- Center Icon -->
+    <item 
+        android:width="40dp"
+        android:height="40dp"
+        android:gravity="center">
+        <vector android:width="40dp"
+                android:height="40dp"
+                android:viewportWidth="24"
+                android:viewportHeight="24">
+            <path
+                android:fillColor="@color/primary"
+                android:pathData="M12,3L2,12h3v8h14v-8h3L12,3zM12,7.69l6,5.4V19h-3v-6H9v6H6v-5.91L12,7.69z"/>
+        </vector>
+    </item>
+</layer-list>

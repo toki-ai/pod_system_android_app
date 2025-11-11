@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.data.repository.CartRepository;
 import com.example.assignmentpod.model.room.RoomType;
@@ -124,8 +126,19 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             String priceText = formatter.format(roomType.getPrice()).replace("₫", "VND");
             tvPrice.setText(priceText);
             
-            // Set room image (placeholder for now)
-            ivRoomImage.setImageResource(R.drawable.placeholder_room);
+            // Load room image using Glide
+            if (roomType.getImage() != null && !roomType.getImage().isEmpty()) {
+                Glide.with(itemView.getContext())
+                    .load(roomType.getImage())
+                    .placeholder(R.drawable.placeholder_room)
+                    .error(R.drawable.placeholder_room)
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(ivRoomImage);
+            } else {
+                // Use placeholder if no image URL
+                ivRoomImage.setImageResource(R.drawable.placeholder_room);
+            }
             
             // Enable/disable book button based on availability
             btnBook.setEnabled(available > 0);

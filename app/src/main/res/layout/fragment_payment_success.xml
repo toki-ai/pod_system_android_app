@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#F5F5F5"
     tools:context=".ui.tab.home.PaymentSuccessFragment">
 
@@ -12,7 +13,8 @@
         android:orientation="vertical"
         android:background="@color/white"
         android:layout_margin="16dp"
-        android:elevation="4dp">
+        android:elevation="4dp"
+        app:cornerRadius="4dp">
 
         <!-- Success Header -->
         <LinearLayout
@@ -20,7 +22,8 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="32dp">
+            android:padding="32dp"
+            >
 
             <!-- Success Icon -->
             <TextView
@@ -351,7 +354,8 @@
                 android:text="Về trang chủ"
                 android:textSize="16sp"
                 android:textColor="@color/white"
-                android:background="@color/primary" />
+                android:background="@color/primary"
+                app:cornerRadius="4dp"/>
 
         </LinearLayout>
 

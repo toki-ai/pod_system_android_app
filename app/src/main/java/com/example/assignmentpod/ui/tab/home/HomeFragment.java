@@ -400,7 +400,7 @@ public class HomeFragment extends Fragment implements RoomTypeAdapter.OnRoomType
         room.setId(roomType.getId());
         room.setName(roomType.getName());
         room.setDescription("Room for booking");
-        room.setImage("");
+        room.setImage(roomType.getImage()); // Use actual image URL
         room.setRoomType(roomType);
 
         cartRepository.addToCart(room);
