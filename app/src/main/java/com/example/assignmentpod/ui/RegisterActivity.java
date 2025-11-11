@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -26,7 +27,7 @@ public class RegisterActivity extends AppCompatActivity {
     
     // UI Components
     private TextInputEditText etName, etEmail, etPassword, etConfirmPassword;
-    private MaterialButton btnRegister, btnBackToLogin;
+    private TextView btnRegister, btnBackToLogin;
     private ProgressBar progressBar;
 
     @Override

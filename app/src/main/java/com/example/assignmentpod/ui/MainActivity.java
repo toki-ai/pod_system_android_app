@@ -8,11 +8,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
@@ -48,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Handle system window insets (status bar, navigation bar)
+        setupSystemWindowInsets();
+
         authRepository = new AuthRepository(this);
         cartRepository = CartRepository.getInstance(this);
         loadingManager = new LoadingManager(this);
@@ -76,6 +82,39 @@ public class MainActivity extends AppCompatActivity {
                 bottomNav.setSelectedItemId(getMenuItemIdFromNavHost(restoredTab));
             }
         }
+    }
+
+    private void setupSystemWindowInsets() {
+        View rootView = findViewById(android.R.id.content);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            // Get system bars insets (status bar and navigation bar)
+            int topInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
+            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+
+            // Apply top padding to the nav host container to avoid status bar overlap
+            View navHostContainer = findViewById(R.id.nav_host_container);
+            if (navHostContainer != null) {
+                navHostContainer.setPadding(
+                    navHostContainer.getPaddingLeft(),
+                    topInset,
+                    navHostContainer.getPaddingRight(),
+                    navHostContainer.getPaddingBottom()
+                );
+            }
+
+            // Apply bottom padding to bottom navigation if needed
+            View bottomNavigation = findViewById(R.id.bottom_navigation);
+            if (bottomNavigation != null) {
+                bottomNavigation.setPadding(
+                    bottomNavigation.getPaddingLeft(),
+                    bottomNavigation.getPaddingTop(),
+                    bottomNavigation.getPaddingRight(),
+                    Math.max(bottomInset - 16, 0) // Account for existing margin
+                );
+            }
+
+            return insets;
+        });
     }
 
     private void initNavigationComponents() {

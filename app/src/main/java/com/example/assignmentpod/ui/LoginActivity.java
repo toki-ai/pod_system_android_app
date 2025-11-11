@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -24,7 +25,7 @@ public class LoginActivity extends AppCompatActivity {
     
     // UI Components
     private TextInputEditText etEmail, etPassword;
-    private MaterialButton btnLogin, btnRegister;
+    private TextView btnLogin, btnRegister;
     private ProgressBar progressBar;
 
     @Override

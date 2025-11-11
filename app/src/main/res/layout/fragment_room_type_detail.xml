@@ -16,10 +16,19 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="← Back to Home" />
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            app:icon="@drawable/ic_arrow_back"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp"
+            app:iconTint="@color/black"
+            android:contentDescription="Back" />
 
         <!-- Brand name -->
 <!--        <TextView-->
@@ -38,7 +47,8 @@
             android:layout_height="200dp"
             android:layout_marginTop="8dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_pod_placeholder" />
+            android:src="@drawable/ic_pod_placeholder"
+            app:cornerRadius="4dp"/>
 
         <!-- Image thumbnails -->
         <LinearLayout
@@ -280,7 +290,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:backgroundTint="#604C9B"
+            android:backgroundTint="#4FC2F5"
             android:padding="12dp"
             android:text="ĐẶT PHÒNG"
             android:textAllCaps="true"

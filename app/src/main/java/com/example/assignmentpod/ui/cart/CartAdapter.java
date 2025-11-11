@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.model.cart.CartItem;
 
@@ -50,11 +52,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         holder.bind(cartItem);
         
         // Add animation for new items
-        if (position > lastPosition) {
+        int currentPosition = holder.getAdapterPosition();
+        if (currentPosition > lastPosition && currentPosition != RecyclerView.NO_POSITION) {
             Animation animation = AnimationUtils.loadAnimation(holder.itemView.getContext(), 
                 android.R.anim.slide_in_left);
             holder.itemView.startAnimation(animation);
-            lastPosition = position;
+            lastPosition = currentPosition;
         }
     }
     
@@ -105,8 +108,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             roomType.setText(cartItem.getRoomTypeName());
             roomPrice.setText(String.format("%,.0f VND", cartItem.getRoomPrice()));
             
-            // Set placeholder image for now
-            roomImage.setImageResource(R.drawable.placeholder_room);
+            // Load image using Glide if available
+            if (cartItem.getRoomImage() != null && !cartItem.getRoomImage().isEmpty()) {
+                Glide.with(itemView.getContext())
+                    .load(cartItem.getRoomImage())
+                    .placeholder(R.drawable.placeholder_room)
+                    .error(R.drawable.placeholder_room)
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(roomImage);
+            } else {
+                roomImage.setImageResource(R.drawable.placeholder_room);
+            }
             
             // Add click animation
             itemView.setOnClickListener(v -> {
