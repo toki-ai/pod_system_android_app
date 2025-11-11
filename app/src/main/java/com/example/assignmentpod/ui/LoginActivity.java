@@ -17,11 +17,14 @@ import com.example.assignmentpod.data.repository.AuthRepository;
 import com.example.assignmentpod.model.auth.AuthResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     
     private AuthRepository authRepository;
+    private FirebaseAuth mAuth;
     
     // UI Components
     private TextInputEditText etEmail, etPassword;
@@ -34,12 +37,11 @@ public class LoginActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
         
+        mAuth = FirebaseAuth.getInstance();
         authRepository = new AuthRepository(this);
 
-        if (authRepository.isLoggedIn()) {
-            navigateToMain();
-            return;
-        }
+        // Check if user is already logged in and email is verified
+        checkCurrentUser();
         
         initViews();
         setupClickListeners();
@@ -48,6 +50,23 @@ public class LoginActivity extends AppCompatActivity {
         String successMessage = getIntent().getStringExtra("success_message");
         if (successMessage != null) {
             Toast.makeText(this, successMessage, Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    private void checkCurrentUser() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            if (currentUser.isEmailVerified()) {
+                // Also check backend login
+                if (authRepository.isLoggedIn()) {
+                    navigateToMain();
+                    return;
+                }
+            } else {
+                // Email not verified, go to verification screen
+                navigateToEmailVerification();
+                return;
+            }
         }
     }
     
@@ -98,8 +117,48 @@ public class LoginActivity extends AppCompatActivity {
     private void loginUser(String email, String password) {
         showLoading(true);
         
-        Log.d(TAG, "Attempting login with email: " + email);
+        Log.d(TAG, "Attempting Firebase login with email: " + email);
         
+        // First authenticate with Firebase
+        mAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "Firebase login successful");
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    
+                    if (user != null) {
+                        if (user.isEmailVerified()) {
+                            // Email verified, proceed with backend login
+                            loginWithBackend(email, password);
+                        } else {
+                            showLoading(false);
+                            Toast.makeText(LoginActivity.this, 
+                                "Email chưa được xác thực. Vui lòng kiểm tra email và xác thực tài khoản.", 
+                                Toast.LENGTH_LONG).show();
+                            navigateToEmailVerification();
+                        }
+                    }
+                } else {
+                    showLoading(false);
+                    Log.e(TAG, "Firebase login failed", task.getException());
+                    String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                    
+                    // Handle specific error messages
+                    if (errorMessage.contains("password is invalid")) {
+                        errorMessage = "Mật khẩu không đúng";
+                    } else if (errorMessage.contains("no user record")) {
+                        errorMessage = "Email không tồn tại trong hệ thống";
+                    } else if (errorMessage.contains("too many attempts")) {
+                        errorMessage = "Quá nhiều lần thử. Vui lòng thử lại sau";
+                    }
+                    
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + errorMessage, Toast.LENGTH_LONG).show();
+                    etPassword.setText("");
+                }
+            });
+    }
+    
+    private void loginWithBackend(String email, String password) {
         authRepository.login(email, password, new AuthRepository.LoginCallback() {
             @Override
             public void onSuccess(AuthResponse authResponse) {
@@ -113,8 +172,7 @@ public class LoginActivity extends AppCompatActivity {
                     
                     Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
                     
-                    Log.d(TAG, "Login successful for: " + email);
-                    Log.d(TAG, "Access token length: " + authResponse.getAccessToken().length());
+                    Log.d(TAG, "Backend login successful for: " + email);
 
                     navigateToMain();
                 });
@@ -125,14 +183,23 @@ public class LoginActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     showLoading(false);
                     
+                    // Sign out from Firebase if backend login fails
+                    mAuth.signOut();
+                    
                     Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + error, Toast.LENGTH_LONG).show();
                     
-                    Log.e(TAG, "Login failed for: " + email + ", Error: " + error);
+                    Log.e(TAG, "Backend login failed for: " + email + ", Error: " + error);
 
                     etPassword.setText("");
                 });
             }
         });
+    }
+    
+    private void navigateToEmailVerification() {
+        Intent intent = new Intent(this, EmailVerificationActivity.class);
+        startActivity(intent);
+        finish();
     }
     
     private void showLoading(boolean show) {
@@ -156,8 +223,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (authRepository.isLoggedIn()) {
-            navigateToMain();
-        }
+        checkCurrentUser();
     }
 }

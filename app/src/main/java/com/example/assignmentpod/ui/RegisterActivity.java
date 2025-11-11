@@ -19,11 +19,14 @@ import com.example.assignmentpod.data.repository.AuthRepository;
 import com.example.assignmentpod.model.response.AccountResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class RegisterActivity extends AppCompatActivity {
     private static final String TAG = "RegisterActivity";
     
     private AuthRepository authRepository;
+    private FirebaseAuth mAuth;
     
     // UI Components
     private TextInputEditText etName, etEmail, etPassword, etConfirmPassword;
@@ -36,6 +39,7 @@ public class RegisterActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
         
+        mAuth = FirebaseAuth.getInstance();
         authRepository = new AuthRepository(this);
         
         initViews();
@@ -118,21 +122,59 @@ public class RegisterActivity extends AppCompatActivity {
     private void registerUser(String name, String email, String password) {
         showLoading(true);
         
-        Log.d(TAG, "Attempting registration with email: " + email);
+        Log.d(TAG, "Creating Firebase user with email: " + email);
         
+        // Create user with Firebase Authentication
+        mAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "Firebase user created successfully");
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    
+                    if (user != null) {
+                        // Send email verification
+                        sendEmailVerification(user, name, email, password);
+                    }
+                } else {
+                    showLoading(false);
+                    Log.e(TAG, "Firebase user creation failed", task.getException());
+                    String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                    Toast.makeText(RegisterActivity.this, "Registration failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                }
+            });
+    }
+    
+    private void sendEmailVerification(FirebaseUser user, String name, String email, String password) {
+        user.sendEmailVerification()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "Email verification sent to: " + email);
+                    
+                    // Also register with your backend
+                    registerWithBackend(name, email, password);
+                } else {
+                    showLoading(false);
+                    Log.e(TAG, "Failed to send verification email", task.getException());
+                    
+                    // Delete the Firebase user since verification failed
+                    user.delete();
+                    
+                    Toast.makeText(RegisterActivity.this, "Failed to send verification email. Please try again.", Toast.LENGTH_LONG).show();
+                }
+            });
+    }
+    
+    private void registerWithBackend(String name, String email, String password) {
         authRepository.register(name, email, password, new AuthRepository.RegisterCallback() {
             @Override
             public void onSuccess(AccountResponse accountResponse) {
                 runOnUiThread(() -> {
                     showLoading(false);
                     
-                    String message = "Registration successful! Welcome " + accountResponse.getName();
-                    Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Backend registration successful for: " + email);
                     
-                    Log.d(TAG, "Registration successful for: " + email);
-                    
-                    // Navigate to login screen
-                    navigateToLoginWithMessage("Registration successful! Please login with your credentials.");
+                    // Navigate to email verification screen
+                    navigateToEmailVerification();
                 });
             }
             
@@ -141,12 +183,25 @@ public class RegisterActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     showLoading(false);
                     
-                    Toast.makeText(RegisterActivity.this, "Registration failed: " + error, Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Backend registration failed for: " + email + ", Error: " + error);
                     
-                    Log.e(TAG, "Registration failed for: " + email + ", Error: " + error);
+                    // Delete Firebase user since backend registration failed
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null) {
+                        user.delete();
+                    }
+                    
+                    Toast.makeText(RegisterActivity.this, "Registration failed: " + error, Toast.LENGTH_LONG).show();
                 });
             }
         });
+    }
+    
+    private void navigateToEmailVerification() {
+        Intent intent = new Intent(this, EmailVerificationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
     
     private void showLoading(boolean show) {
