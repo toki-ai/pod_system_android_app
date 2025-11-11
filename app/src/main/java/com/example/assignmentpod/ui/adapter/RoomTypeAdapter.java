@@ -89,7 +89,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         private TextView tvCapacity;
         private TextView tvAvailable;
         private TextView tvPrice;
-        private MaterialButton btnBook;
+//        private MaterialButton btnBook;
         private MaterialButton btnAddToCart;
         private Boolean currentIsInCart = null;
 
@@ -101,7 +101,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             tvCapacity = itemView.findViewById(R.id.tv_capacity);
             tvAvailable = itemView.findViewById(R.id.tv_available);
             tvPrice = itemView.findViewById(R.id.tv_price);
-            btnBook = itemView.findViewById(R.id.btn_book);
+//            btnBook = itemView.findViewById(R.id.btn_book);
             btnAddToCart = itemView.findViewById(R.id.btn_add_to_cart);
         }
 
@@ -141,8 +141,8 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
             }
             
             // Enable/disable book button based on availability
-            btnBook.setEnabled(available > 0);
-            btnBook.setText(available > 0 ? "ĐẶT PHÒNG" : "HẾT PHÒNG");
+//            btnBook.setEnabled(available > 0);
+//            btnBook.setText(available > 0 ? "ĐẶT PHÒNG" : "HẾT PHÒNG");
             
             // Reflect current cart status on star icon (one-time init per bind)
             if (cartRepository != null && lifecycleOwner != null && btnAddToCart != null) {
@@ -159,11 +159,11 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                 }
             });
             
-            btnBook.setOnClickListener(v -> {
-                if (listener != null && available > 0) {
-                    listener.onBookClick(roomType);
-                }
-            });
+//            btnBook.setOnClickListener(v -> {
+//                if (listener != null && available > 0) {
+//                    listener.onBookClick(roomType);
+//                }
+//            });
 
             if (btnAddToCart != null) {
                 btnAddToCart.setEnabled(available > 0);
@@ -198,11 +198,10 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         private void updateStarIcon(boolean isInCart) {
             if (btnAddToCart == null) return;
             if (isInCart) {
-                btnAddToCart.setIconResource(R.drawable.ic_star_filled);
-                btnAddToCart.setIconTintResource(R.color.star_yellow);
+                btnAddToCart.setIconResource(R.drawable.heart);
+                btnAddToCart.setIconTintResource(R.color.error);
             } else {
-                btnAddToCart.setIconResource(R.drawable.ic_star_outline);
-                btnAddToCart.setIconTintResource(R.color.gray);
+                btnAddToCart.setIconResource(R.drawable.heart_out_line);
             }
         }
 
