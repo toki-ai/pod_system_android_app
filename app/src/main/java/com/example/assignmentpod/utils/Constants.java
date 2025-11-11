@@ -3,7 +3,7 @@ package com.example.assignmentpod.utils;
 public class Constants {
     
     // API Configuration
-    public static final String BASE_URL = "http://10.0.2.2:8080/"; // Use 10.0.2.2 for Android emulator
+    public static final String BASE_URL = "http://10.0.2.2:8081/"; // Use 10.0.2.2 for Android emulator
     public static final int CONNECTION_TIMEOUT = 30; // seconds
     public static final int READ_TIMEOUT = 30; // seconds
     public static final int WRITE_TIMEOUT = 30; // seconds

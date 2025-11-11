@@ -3,6 +3,7 @@ package com.example.assignmentpod.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.app.AlertDialog;
@@ -194,9 +195,10 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                 });
             }
         }
-        
+
         private void updateStarIcon(boolean isInCart) {
             if (btnAddToCart == null) return;
+
             if (isInCart) {
                 btnAddToCart.setIconResource(R.drawable.heart);
                 btnAddToCart.setIconTintResource(R.color.error);
@@ -204,6 +206,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                 btnAddToCart.setIconResource(R.drawable.heart_out_line);
             }
         }
+
 
         private String generateDescription(String roomTypeName) {
             if (roomTypeName == null) {

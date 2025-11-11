@@ -18,13 +18,15 @@
     <color name="text_dark">#212121</color>
     <color name="green">#4CAF50</color>
     <color name="star_yellow">#FFC107</color>
-    
+
     <!-- Bottom Navigation Colors -->
     <color name="bottom_nav_background">#FFFFFF</color>
     <color name="bottom_nav_shadow">#1A000000</color>
-    <color name="bottom_nav_active">#4FC3F7</color>
+    <color name="bottom_nav_active">#264FC3F7</color>
     <color name="bottom_nav_inactive">#9E9E9E</color>
-    
+    <color name="bottom_nav_icon_color">#4FC3F7</color>
+
+
     <!-- Theme Colors -->
     <color name="primary_light">#81D4FA</color>
     <color name="primary_variant">#29B6F6</color>
