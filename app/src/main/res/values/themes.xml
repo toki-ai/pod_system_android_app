@@ -41,7 +41,7 @@
     </style>
 
     <style name="CustomBottomNavigationActiveIndicator" parent="">
-        <item name="android:color">@color/primary</item>
+        <item name="android:color">#334FC3F7</item>
         <item name="android:width">56dp</item>
         <item name="android:height">56dp</item>
         <item name="marginHorizontal">0dp</item>

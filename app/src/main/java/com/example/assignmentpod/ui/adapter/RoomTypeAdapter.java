@@ -3,6 +3,7 @@ package com.example.assignmentpod.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.app.AlertDialog;
@@ -90,7 +91,7 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
         private TextView tvAvailable;
         private TextView tvPrice;
         private MaterialButton btnBook;
-        private MaterialButton btnAddToCart;
+        private ImageButton btnAddToCart;
         private Boolean currentIsInCart = null;
 
         public RoomTypeViewHolder(@NonNull View itemView) {
@@ -194,17 +195,25 @@ public class RoomTypeAdapter extends RecyclerView.Adapter<RoomTypeAdapter.RoomTy
                 });
             }
         }
-        
+
         private void updateStarIcon(boolean isInCart) {
             if (btnAddToCart == null) return;
+
             if (isInCart) {
-                btnAddToCart.setIconResource(R.drawable.ic_star_filled);
-                btnAddToCart.setIconTintResource(R.color.star_yellow);
+                btnAddToCart.setImageResource(R.drawable.ic_star_filled);
+                btnAddToCart.setColorFilter(
+                        itemView.getContext().getColor(R.color.star_yellow),
+                        android.graphics.PorterDuff.Mode.SRC_IN
+                );
             } else {
-                btnAddToCart.setIconResource(R.drawable.ic_star_outline);
-                btnAddToCart.setIconTintResource(R.color.gray);
+                btnAddToCart.setImageResource(R.drawable.ic_star_outline);
+                btnAddToCart.setColorFilter(
+                        itemView.getContext().getColor(R.color.gray),
+                        android.graphics.PorterDuff.Mode.SRC_IN
+                );
             }
         }
+
 
         private String generateDescription(String roomTypeName) {
             if (roomTypeName == null) {
