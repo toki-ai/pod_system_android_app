@@ -82,7 +82,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 Log.d(TAG, "DirectionsHelper initialized successfully");
             } else {
                 Log.e(TAG, "Google Maps API key not available for Directions - apiKey: " + apiKey);
-                Toast.makeText(requireContext(), "API key không hợp lệ", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(requireContext(), "API key không hợp lệ", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             Log.e(TAG, "Error initializing DirectionsHelper", e);
