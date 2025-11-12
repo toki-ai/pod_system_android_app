@@ -147,7 +147,7 @@ public class ChatFragment extends Fragment {
         btnSend = view.findViewById(R.id.btn_send);
         tvEmptyState = view.findViewById(R.id.tv_empty_state);
         tvOnlineStatus = view.findViewById(R.id.tv_online_status);
-        progressBar = view.findViewById(R.id.progress_bar);
+//        progressBar = view.findViewById(R.id.progress_bar);
 
         // Setup RecyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -171,11 +171,11 @@ public class ChatFragment extends Fragment {
     }
 
     private void loadMessages() {
-        progressBar.setVisibility(View.VISIBLE);
+//        progressBar.setVisibility(View.VISIBLE);
         messagesListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                progressBar.setVisibility(View.GONE);
+//                progressBar.setVisibility(View.GONE);
 
                 List<Message> messages = new ArrayList<>();
 
@@ -210,9 +210,9 @@ public class ChatFragment extends Fragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                progressBar.setVisibility(View.GONE);
+//                progressBar.setVisibility(View.GONE);
                 Log.e(TAG, "Failed to load messages: " + databaseError.getMessage());
-                Toast.makeText(getContext(), "Failed to load messages", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Failed to load messages", Toast.LENGTH_SHORT).show();
             }
         };
 

@@ -42,8 +42,10 @@
             android:gravity="center"
             app:iconPadding="0dp"
             app:iconSize="20dp"
+            app:iconTint="#FF0000"
             app:layout_constraintTop_toTopOf="@id/iv_room_image"
             app:layout_constraintEnd_toEndOf="@id/iv_room_image" />
+
 
         <TextView
             android:id="@+id/tv_room_name"
