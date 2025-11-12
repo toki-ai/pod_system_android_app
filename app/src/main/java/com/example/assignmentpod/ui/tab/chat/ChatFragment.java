@@ -1,5 +1,6 @@
 package com.example.assignmentpod.ui.tab.chat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,9 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignmentpod.R;
 import com.example.assignmentpod.model.chat.Message;
+import com.example.assignmentpod.ui.EmailVerificationActivity;
+import com.example.assignmentpod.ui.LoginActivity;
 import com.example.assignmentpod.ui.adapter.ChatMessageAdapter;
 import com.example.assignmentpod.data.local.TokenManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,6 +49,7 @@ public class ChatFragment extends Fragment {
     private DatabaseReference chatRoomRef;
     private DatabaseReference messagesRef;
     private ValueEventListener messagesListener;
+    private FirebaseAuth mAuth;
 
     public ChatFragment() {
     }
@@ -52,6 +58,13 @@ public class ChatFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "ChatFragment created");
+
+        mAuth = FirebaseAuth.getInstance();
+        
+        // Check if user is authenticated and email is verified
+        if (!checkAuthenticationAndVerification()) {
+            return;
+        }
 
         // Get account ID from TokenManager
         TokenManager tokenManager = new TokenManager(requireContext());
@@ -69,6 +82,39 @@ public class ChatFragment extends Fragment {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         chatRoomRef = firebaseDatabase.getReference("chats").child(chatRoomId);
         messagesRef = chatRoomRef.child("messages");
+    }
+    
+    private boolean checkAuthenticationAndVerification() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        
+        if (currentUser == null) {
+            Log.e(TAG, "User not authenticated");
+            navigateToLogin();
+            return false;
+        }
+        
+        if (!currentUser.isEmailVerified()) {
+            Log.e(TAG, "Email not verified");
+            Toast.makeText(requireContext(), "Vui lòng xác thực email để sử dụng tính năng chat", Toast.LENGTH_LONG).show();
+            navigateToEmailVerification();
+            return false;
+        }
+        
+        Log.d(TAG, "User authenticated and email verified: " + currentUser.getEmail());
+        return true;
+    }
+    
+    private void navigateToLogin() {
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
+    }
+    
+    private void navigateToEmailVerification() {
+        Intent intent = new Intent(requireContext(), EmailVerificationActivity.class);
+        startActivity(intent);
+        requireActivity().finish();
     }
 
     @Override

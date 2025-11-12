@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <!-- App Logo -->
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_email_verification"
+        android:layout_marginBottom="32dp"
+        app:tint="@color/primary" />
+
+    <!-- Title -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xác thực email"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/on_background"
+        android:layout_marginBottom="16dp"
+        android:textAlignment="center" />
+
+    <!-- Description -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chúng tôi đã gửi email xác thực đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư và nhấp vào liên kết xác thực."
+        android:textSize="16sp"
+        android:textColor="@color/on_surface_variant"
+        android:layout_marginBottom="32dp"
+        android:textAlignment="center"
+        android:lineSpacingExtra="4dp" />
+
+    <!-- Email Info Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        app:cardBackgroundColor="@color/surface"
+        app:cardElevation="2dp"
+        app:cardCornerRadius="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_email"
+                app:tint="@color/primary"
+                android:layout_marginEnd="12dp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_user_email"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="user@example.com"
+                android:textSize="16sp"
+                android:textColor="@color/on_surface"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Action Buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_check_verification"
+        style="@style/PrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Kiểm tra xác thực"
+        android:layout_marginBottom="12dp"
+        app:icon="@drawable/ic_check_circle"
+        app:iconGravity="textStart" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_resend_verification"
+        style="@style/SecondaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Gửi lại email xác thực"
+        android:layout_marginBottom="24dp"
+        app:icon="@drawable/ic_refresh"
+        app:iconGravity="textStart" />
+
+    <!-- Help Text -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Không nhận được email? Kiểm tra thư mục spam hoặc nhấn 'Gửi lại email xác thực'"
+        android:textSize="14sp"
+        android:textColor="@color/on_surface_variant"
+        android:layout_marginBottom="32dp"
+        android:textAlignment="center"
+        android:lineSpacingExtra="2dp" />
+
+    <!-- Back to Login Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_back_to_login"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quay lại đăng nhập"
+        app:iconTint="@color/primary"
+        android:textColor="@color/primary"
+        app:icon="@drawable/ic_arrow_back" />
+
+</LinearLayout>
